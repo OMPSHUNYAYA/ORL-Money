@@ -1,0 +1,1312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ORL-Money Demo</title>
+  <style>
+    :root {
+      --bg: #08101b;
+      --panel: #0f1726;
+      --panel2: #142033;
+      --border: #263754;
+      --text: #eaf0ff;
+      --muted: #9eb0d2;
+      --accent: #73a7ff;
+      --good: #29c47f;
+      --warn: #ffb020;
+      --bad: #ff6d84;
+      --shadow: 0 14px 36px rgba(0,0,0,.28);
+      --radius: 18px;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: Inter, Arial, sans-serif;
+      background: linear-gradient(180deg, #07101a 0%, #0a1320 100%);
+      color: var(--text);
+      line-height: 1.45;
+    }
+
+    .wrap {
+      max-width: 1440px;
+      margin: 0 auto;
+      padding: 18px;
+    }
+
+    .card {
+      background: linear-gradient(180deg, var(--panel) 0%, var(--panel2) 100%);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 16px;
+      margin-bottom: 14px;
+    }
+
+    .eyebrow {
+      color: var(--accent);
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+    }
+
+    .formula {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 13px;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,.03);
+      padding: 10px 12px;
+      border-radius: 12px;
+      white-space: nowrap;
+      overflow-x: auto;
+    }
+
+    .hero {
+      display: grid;
+      grid-template-columns: 1.08fr .92fr;
+      gap: 12px;
+      margin-bottom: 12px;
+      align-items: start;
+    }
+
+    .panel { padding: 18px; }
+
+    h1, h2, h3 { margin: 0 0 8px; }
+
+    h1 { font-size: 30px; }
+
+    .lead {
+      color: var(--muted);
+      margin: 0;
+      font-size: 14px;
+    }
+
+    .badges {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .badge {
+      padding: 6px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: #0d1626;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .live-stage {
+      margin-top: 14px;
+      padding: 14px;
+      border-radius: 14px;
+      border: 1px solid rgba(115,167,255,.35);
+      background: linear-gradient(180deg, rgba(115,167,255,.10) 0%, rgba(115,167,255,.05) 100%);
+    }
+
+    .stage-kicker {
+      font-size: 12px;
+      color: var(--accent);
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      font-weight: 800;
+      margin-bottom: 6px;
+    }
+
+    .stage-title {
+      font-size: 20px;
+      font-weight: 800;
+      margin-bottom: 6px;
+    }
+
+    .stage-body {
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .metric-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0,1fr));
+      gap: 12px;
+      margin-top: 14px;
+    }
+
+    .metric {
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,.03);
+      border-radius: 14px;
+      padding: 14px;
+    }
+
+    .title {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+
+    .big {
+      font-size: 26px;
+      font-weight: 800;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .small {
+      margin-top: 6px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .control-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-top: 12px;
+    }
+
+    .control-box, .legend, .note, .event-card, .node-card, .tx-card, .balance-box, .certificate-box, .verdict-box {
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,.03);
+      border-radius: 14px;
+    }
+
+    .control-box, .legend, .note, .event-card, .certificate-box, .verdict-box {
+      padding: 14px;
+    }
+
+    .button-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0,1fr));
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    button {
+      width: 100%;
+      border-radius: 12px;
+      border: 1px solid #31527f;
+      background: linear-gradient(180deg, #173355 0%, #112745 100%);
+      color: var(--text);
+      padding: 11px 12px;
+      font-size: 14px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    button.secondary {
+      background: #101a2b;
+      border-color: var(--border);
+    }
+
+    button.good {
+      background: linear-gradient(180deg, #136745 0%, #0f5439 100%);
+      border-color: #229769;
+    }
+
+    button.warn {
+      background: linear-gradient(180deg, #694a10 0%, #5a3f0f 100%);
+      border-color: #af7c18;
+    }
+
+    .legend-list {
+      display: grid;
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .swatch {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      flex: 0 0 auto;
+    }
+
+    .main-grid {
+      display: grid;
+      grid-template-columns: 1.04fr .96fr;
+      gap: 12px;
+      margin-bottom: 12px;
+      align-items: start;
+    }
+
+    .sub-grid {
+      display: grid;
+      gap: 12px;
+    }
+
+    .node-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0,1fr));
+      gap: 12px;
+    }
+
+    .node-card {
+      padding: 14px;
+      min-height: 500px;
+    }
+
+    .node-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      align-items: flex-start;
+      margin-bottom: 10px;
+    }
+
+    .node-name {
+      font-size: 18px;
+      font-weight: 800;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 7px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      font-size: 12px;
+      font-weight: 800;
+      background: rgba(255,255,255,.03);
+      white-space: nowrap;
+    }
+
+    .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--accent);
+    }
+
+    .subtle {
+      color: var(--muted);
+      font-size: 13px;
+      overflow-wrap: anywhere;
+    }
+
+    .entry-list, .tx-list, .balance-grid {
+      display: grid;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .entry {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 12px;
+      padding: 8px 10px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: #0e1727;
+      color: #deebff;
+      overflow-wrap: anywhere;
+    }
+
+    .tx-card {
+      padding: 12px;
+      background: rgba(255,255,255,.025);
+    }
+
+    .tx-top {
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+
+    .tx-id {
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .tx-status {
+      padding: 5px 8px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 800;
+      text-transform: uppercase;
+      border: 1px solid var(--border);
+      letter-spacing: .05em;
+    }
+
+    .status-resolved {
+      color: #cff9e7;
+      background: rgba(41,196,127,.14);
+      border-color: rgba(41,196,127,.35);
+    }
+
+    .status-incomplete {
+      color: #ffe2af;
+      background: rgba(255,176,32,.12);
+      border-color: rgba(255,176,32,.35);
+    }
+
+    .status-abstain {
+      color: #ffd5dd;
+      background: rgba(255,109,132,.12);
+      border-color: rgba(255,109,132,.35);
+    }
+
+    .mono {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .balance-grid {
+      grid-template-columns: repeat(2, minmax(0,1fr));
+    }
+
+    .balance-box {
+      padding: 10px;
+      background: #0e1727;
+    }
+
+    .balance-value {
+      font-size: 18px;
+      font-weight: 800;
+    }
+
+    .timeline {
+      display: grid;
+      gap: 10px;
+      max-height: 260px;
+      overflow: auto;
+      margin-top: 10px;
+    }
+
+    .event-card.active {
+      border-color: rgba(115,167,255,.45);
+      box-shadow: 0 0 0 1px rgba(115,167,255,.14);
+    }
+
+    .event-step {
+      font-size: 12px;
+      font-weight: 800;
+      color: var(--accent);
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      margin-bottom: 4px;
+    }
+
+    .event-title {
+      font-weight: 800;
+      margin-bottom: 4px;
+    }
+
+    .event-body {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .graph-shell {
+      margin-top: 12px;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      background: linear-gradient(180deg, rgba(255,255,255,.025) 0%, rgba(255,255,255,.015) 100%);
+      padding: 12px;
+    }
+
+    svg {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+
+    .graph-caption {
+      margin-top: 8px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .certificate-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+      margin-top: 12px;
+    }
+
+    .certificate-box {
+      min-height: 150px;
+    }
+
+    .certificate-hero {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0,1fr));
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .certificate-stat {
+      padding: 12px;
+      border-radius: 12px;
+      border: 1px solid rgba(41,196,127,.28);
+      background: rgba(41,196,127,.07);
+    }
+
+    .certificate-stat .label {
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+
+    .certificate-stat .value {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 22px;
+      font-weight: 800;
+      color: #cff9e7;
+    }
+
+    .checklist {
+      display: grid;
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .checkitem {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .checkdot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: var(--good);
+      flex: 0 0 auto;
+    }
+
+    .verdict-box {
+      border: 1px solid rgba(115,167,255,.35);
+      background: linear-gradient(180deg, rgba(115,167,255,.08) 0%, rgba(115,167,255,.04) 100%);
+    }
+
+    .verdict-main {
+      font-size: 18px;
+      font-weight: 800;
+      margin-bottom: 8px;
+    }
+
+    .verdict-sub {
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .footer-note {
+      margin-top: 12px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .sticky-hud {
+      position: sticky;
+      top: 10px;
+      z-index: 40;
+      padding: 12px 14px;
+      border-radius: 14px;
+      border: 1px solid rgba(115,167,255,.28);
+      background: rgba(8,16,27,.92);
+      backdrop-filter: blur(10px);
+      box-shadow: 0 10px 24px rgba(0,0,0,.24);
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .hud-kicker {
+      color: var(--accent);
+      font-size: 11px;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      font-weight: 800;
+      margin-bottom: 4px;
+    }
+
+    .hud-title {
+      font-weight: 800;
+      font-size: 16px;
+    }
+
+    .hud-body {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .hud-summary {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 13px;
+      color: #deebff;
+      text-align: right;
+      white-space: nowrap;
+    }
+
+    @media (max-width: 1220px) {
+      .hero, .main-grid { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 920px) {
+      .metric-grid, .certificate-hero, .control-grid, .balance-grid, .button-grid, .node-grid { grid-template-columns: 1fr; }
+      h1 { font-size: 26px; }
+    }
+
+    @media (max-width: 720px) {
+      .wrap { padding: 12px; }
+      .topbar, .sticky-hud { flex-direction: column; align-items: flex-start; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <section class="card topbar">
+      <div>
+        <div class="eyebrow">ORL-Money • Orderless Ledger — Money System</div>
+      </div>
+      <div class="formula">correctness = structure | valid -> RESOLVED | missing -> INCOMPLETE | conflicting -> ABSTAIN</div>
+    </section>
+
+    <section class="sticky-hud">
+      <div>
+        <div class="hud-kicker">Live Stage</div>
+        <div class="hud-title" id="hudTitle">Local Fragmentation</div>
+        <div class="hud-body" id="hudBody">Partial money evidence exists. Final truth has not yet been accepted.</div>
+      </div>
+      <div class="hud-summary" id="hudSummary">R:0 I:0 A:0</div>
+    </section>
+
+    <section class="hero" id="demoStart">
+      <div class="card panel">
+        <h1>Offline Money Reconciliation Through Structure</h1>
+        <p class="lead">
+          Two isolated systems begin with different money fragments. No shared clock, no shared order, and no coordinator are required.
+          Valid money resolves, incomplete structure is not guessed, conflicting structure is not forced, and final truth still converges.
+        </p>
+
+        <div class="badges">
+          <span class="badge">Open Reference Implementation</span>
+          <span class="badge">No Time</span>
+          <span class="badge">No Order</span>
+          <span class="badge">No Coordinator</span>
+          <span class="badge">No Timestamps</span>
+          <span class="badge">No Continuous Connectivity</span>
+        </div>
+
+        <div class="live-stage">
+          <div class="stage-kicker">Current Stage</div>
+          <div class="stage-title" id="stageTitle">Local Fragmentation</div>
+          <div class="stage-body" id="stageBody">
+            Each node sees only part of the financial structure.
+          </div>
+        </div>
+
+        <div class="metric-grid">
+          <div class="metric">
+            <div class="title">Phase</div>
+            <div class="big" id="phaseLabel">Local Views</div>
+            <div class="small">Fragmented first, shared truth later</div>
+          </div>
+          <div class="metric">
+            <div class="title">Node Equality</div>
+            <div class="big mono" id="equalityLabel">Before: Mixed</div>
+            <div class="small" id="equalityDetail">Independent systems begin differently</div>
+          </div>
+          <div class="metric">
+            <div class="title">State Summary</div>
+            <div class="big mono" id="summaryLabel">--</div>
+            <div class="small">Resolved / Incomplete / Abstain</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card panel">
+        <h2>Controls</h2>
+        <p class="lead">
+          Step through fragmentation, bounded sharing, and final equality — or run the full demonstration automatically.
+        </p>
+
+        <div class="control-grid">
+          <div class="control-box">
+            <div class="title">Simulation</div>
+            <div class="button-grid">
+              <button id="stepBtn">Next Step</button>
+              <button class="good" id="runBtn">Run Full Demo</button>
+              <button class="secondary" id="resetBtn">Reset</button>
+              <button class="warn" id="shareBtn">Jump to Final Equality</button>
+            </div>
+            <div class="footer-note">
+              The graph below is the single visual proof: fragmented structure on the left, shared truth on the right.
+            </div>
+          </div>
+
+          <div class="legend">
+            <div class="title">Outcome Legend</div>
+            <div class="legend-list">
+              <div class="legend-item"><span class="swatch" style="background:#29c47f;"></span> RESOLVED — sufficient and consistent structure</div>
+              <div class="legend-item"><span class="swatch" style="background:#ffb020;"></span> INCOMPLETE — missing counterpart structure</div>
+              <div class="legend-item"><span class="swatch" style="background:#ff6d84;"></span> ABSTAIN — conflicting structure safely contained</div>
+              <div class="legend-item"><span class="swatch" style="background:#73a7ff;"></span> LOCAL — fragment visibility before convergence</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="timeline" id="timeline"></div>
+      </div>
+    </section>
+
+    <section class="main-grid">
+      <div class="sub-grid">
+        <section class="card panel">
+          <h2>Single High-Impact Convergence Graph</h2>
+          <p class="lead">
+            One frame, one claim: local fragmentation on the left, structural resolution in the middle, final equality on the right.
+          </p>
+
+          <div class="graph-shell">
+            <svg viewBox="0 0 1080 480" aria-label="ORL-Money convergence graph">
+              <defs>
+                <marker id="arrowBlue" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto" markerUnits="strokeWidth">
+                  <path d="M0,0 L10,5 L0,10 z" fill="#73a7ff"></path>
+                </marker>
+                <filter id="softGlow">
+                  <feGaussianBlur stdDeviation="5" result="blur"></feGaussianBlur>
+                  <feMerge>
+                    <feMergeNode in="blur"></feMergeNode>
+                    <feMergeNode in="SourceGraphic"></feMergeNode>
+                  </feMerge>
+                </filter>
+              </defs>
+
+              <rect x="12" y="12" width="1056" height="456" rx="18" fill="rgba(255,255,255,0.02)" stroke="#263754"></rect>
+
+              <text x="110" y="40" fill="#73a7ff" font-size="15" font-weight="800" text-anchor="middle" letter-spacing="2">LOCAL VIEWS</text>
+              <text x="540" y="40" fill="#73a7ff" font-size="15" font-weight="800" text-anchor="middle" letter-spacing="2">STRUCTURAL RESOLUTION</text>
+              <text x="960" y="40" fill="#73a7ff" font-size="15" font-weight="800" text-anchor="middle" letter-spacing="2">FINAL EQUALITY</text>
+
+              <rect x="40" y="70" width="150" height="150" rx="18" fill="#0f192a" stroke="#31527f" id="graphNodeALocal"></rect>
+              <text x="115" y="100" fill="#eaf0ff" font-size="20" font-weight="800" text-anchor="middle">Node A</text>
+              <text x="115" y="126" fill="#9eb0d2" font-size="13" text-anchor="middle">VillageA fragments</text>
+              <text x="115" y="158" fill="#deebff" font-size="13" text-anchor="middle" class="mono">M100 debit 500</text>
+              <text x="115" y="180" fill="#deebff" font-size="13" text-anchor="middle" class="mono">M300 debit 120</text>
+              <text x="115" y="202" fill="#deebff" font-size="13" text-anchor="middle" class="mono">M400 debit 400</text>
+
+              <rect x="40" y="260" width="150" height="150" rx="18" fill="#0f192a" stroke="#31527f" id="graphNodeBLocal"></rect>
+              <text x="115" y="290" fill="#eaf0ff" font-size="20" font-weight="800" text-anchor="middle">Node B</text>
+              <text x="115" y="316" fill="#9eb0d2" font-size="13" text-anchor="middle">VillageB fragments</text>
+              <text x="115" y="348" fill="#deebff" font-size="13" text-anchor="middle" class="mono">M100 credit 500</text>
+              <text x="115" y="370" fill="#deebff" font-size="13" text-anchor="middle" class="mono">M200 credit 300</text>
+              <text x="115" y="392" fill="#deebff" font-size="13" text-anchor="middle" class="mono">M500 mixed credits</text>
+
+              <line x1="220" y1="145" x2="448" y2="145" stroke="#73a7ff" stroke-width="4" marker-end="url(#arrowBlue)" opacity="0.18" id="shareLineTop"></line>
+              <line x1="220" y1="335" x2="448" y2="335" stroke="#73a7ff" stroke-width="4" marker-end="url(#arrowBlue)" opacity="0.18" id="shareLineBottom"></line>
+              <line x1="630" y1="145" x2="860" y2="145" stroke="#73a7ff" stroke-width="4" marker-end="url(#arrowBlue)" opacity="0.18" id="convergeLineTop"></line>
+              <line x1="630" y1="335" x2="860" y2="335" stroke="#73a7ff" stroke-width="4" marker-end="url(#arrowBlue)" opacity="0.18" id="convergeLineBottom"></line>
+
+              <rect x="448" y="90" width="182" height="300" rx="18" fill="#0f192a" stroke="#31527f" id="graphResolver"></rect>
+              <text x="539" y="120" fill="#eaf0ff" font-size="20" font-weight="800" text-anchor="middle">ORL Resolver</text>
+              <text x="539" y="148" fill="#9eb0d2" font-size="13" text-anchor="middle">resolve(structure)</text>
+
+              <rect x="475" y="180" width="128" height="40" rx="12" fill="rgba(41,196,127,.12)" stroke="rgba(41,196,127,.35)" id="boxResolved"></rect>
+              <text x="539" y="205" fill="#cff9e7" font-size="13" font-weight="800" text-anchor="middle">RESOLVED</text>
+
+              <rect x="475" y="235" width="128" height="40" rx="12" fill="rgba(255,176,32,.12)" stroke="rgba(255,176,32,.35)" id="boxIncomplete"></rect>
+              <text x="539" y="260" fill="#ffe2af" font-size="13" font-weight="800" text-anchor="middle">INCOMPLETE</text>
+
+              <rect x="475" y="290" width="128" height="40" rx="12" fill="rgba(255,109,132,.12)" stroke="rgba(255,109,132,.35)" id="boxAbstain"></rect>
+              <text x="539" y="315" fill="#ffd5dd" font-size="13" font-weight="800" text-anchor="middle">ABSTAIN</text>
+
+              <text x="539" y="355" fill="#9eb0d2" font-size="12" text-anchor="middle">valid -> resolve</text>
+              <text x="539" y="373" fill="#9eb0d2" font-size="12" text-anchor="middle">missing -> no forced movement</text>
+              <text x="539" y="391" fill="#9eb0d2" font-size="12" text-anchor="middle">conflicting -> no unsafe movement</text>
+
+              <rect x="860" y="70" width="170" height="150" rx="18" fill="#0f192a" stroke="#31527f" id="graphFinalA"></rect>
+              <text x="945" y="100" fill="#eaf0ff" font-size="20" font-weight="800" text-anchor="middle">Node A</text>
+              <text x="945" y="126" fill="#9eb0d2" font-size="13" text-anchor="middle" id="graphFinalALabel">truth not yet shared</text>
+              <text x="945" y="160" fill="#29c47f" font-size="16" font-weight="800" text-anchor="middle" id="graphFinalAValue1">pending</text>
+              <text x="945" y="184" fill="#29c47f" font-size="16" font-weight="800" text-anchor="middle" id="graphFinalAValue2">pending</text>
+
+              <rect x="860" y="260" width="170" height="150" rx="18" fill="#0f192a" stroke="#31527f" id="graphFinalB"></rect>
+              <text x="945" y="290" fill="#eaf0ff" font-size="20" font-weight="800" text-anchor="middle">Node B</text>
+              <text x="945" y="316" fill="#9eb0d2" font-size="13" text-anchor="middle" id="graphFinalBLabel">truth not yet shared</text>
+              <text x="945" y="350" fill="#29c47f" font-size="16" font-weight="800" text-anchor="middle" id="graphFinalBValue1">pending</text>
+              <text x="945" y="374" fill="#29c47f" font-size="16" font-weight="800" text-anchor="middle" id="graphFinalBValue2">pending</text>
+
+              <text x="945" y="438" fill="#73a7ff" font-size="18" font-weight="800" text-anchor="middle" id="graphMatchText">MATCH = FALSE</text>
+            </svg>
+          </div>
+
+          <div class="graph-caption" id="graphCaption">
+            At the start, both nodes disagree because each sees only partial evidence.
+          </div>
+        </section>
+
+        <section class="card panel">
+          <h2>Node Views</h2>
+          <p class="lead">
+            These cards mirror the same structural truth shown in the graph.
+          </p>
+          <div class="node-grid" id="nodeGrid"></div>
+        </section>
+      </div>
+
+      <div class="sub-grid">
+        <section class="card panel">
+          <h2>Certificate</h2>
+          <p class="lead">
+            Final correctness is established by structural equality and money conservation.
+          </p>
+
+          <div class="certificate-grid">
+            <div class="certificate-box">
+              <div class="title">Final Certificate</div>
+
+              <div class="certificate-hero">
+                <div class="certificate-stat">
+                  <div class="label">Match</div>
+                  <div class="value" id="certMatch">FALSE</div>
+                </div>
+                <div class="certificate-stat">
+                  <div class="label">Money Conserved</div>
+                  <div class="value" id="certMoney">TRUE</div>
+                </div>
+                <div class="certificate-stat">
+                  <div class="label">No Duplication</div>
+                  <div class="value" id="certDup">FALSE</div>
+                </div>
+                <div class="certificate-stat">
+                  <div class="label">No False Movement</div>
+                  <div class="value" id="certLoss">FALSE</div>
+                </div>
+              </div>
+
+              <div class="checklist" id="certificateList"></div>
+            </div>
+
+            <div class="verdict-box">
+              <div class="title">Final Verdict</div>
+              <div class="verdict-main" id="verdictMain">Correctness is not yet fully established.</div>
+              <div class="verdict-sub" id="verdictSub">
+                Partial evidence is visible, but final financial truth is not yet shared across nodes.
+              </div>
+            </div>
+
+            <div class="certificate-box">
+              <div class="title">Outcome Meaning</div>
+              <div class="checklist" id="meaningList"></div>
+            </div>
+          </div>
+        </section>
+
+        <section class="card panel">
+          <h2>Execution Timeline</h2>
+          <p class="lead">
+            Step through the transition from local fragmentation to final equality.
+          </p>
+          <div class="timeline" id="timeline2"></div>
+        </section>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    const initialBalances = {
+      VillageA: 1000,
+      VillageB: 1000
+    };
+
+    const localNodes = [
+      [
+        { tx: "M100", side: "debit", account: "VillageA", amount: 500 },
+        { tx: "M300", side: "debit", account: "VillageA", amount: 120 },
+        { tx: "M400", side: "debit", account: "VillageA", amount: 400 },
+        { tx: "M500", side: "debit", account: "VillageA", amount: 250 }
+      ],
+      [
+        { tx: "M100", side: "credit", account: "VillageB", amount: 500 },
+        { tx: "M100", side: "credit", account: "VillageB", amount: 500 },
+        { tx: "M200", side: "credit", account: "VillageB", amount: 300 },
+        { tx: "M400", side: "credit", account: "VillageB", amount: 450 },
+        { tx: "M500", side: "credit", account: "VillageB", amount: 250 },
+        { tx: "M500", side: "credit", account: "VillageB_Alt", amount: 250 }
+      ]
+    ];
+
+    function entryKey(entry) {
+      return `${entry.tx}|${entry.side}|${entry.account}|${entry.amount}`;
+    }
+
+    function deduplicate(entries) {
+      const map = new Map();
+      entries.forEach(entry => map.set(entryKey(entry), entry));
+      return Array.from(map.values());
+    }
+
+    function resolve(entries) {
+      const uniqueEntries = deduplicate(entries);
+      const byTx = new Map();
+
+      uniqueEntries.forEach(entry => {
+        if (!byTx.has(entry.tx)) byTx.set(entry.tx, []);
+        byTx.get(entry.tx).push(entry);
+      });
+
+      const balances = new Map();
+      const txState = new Map();
+
+      Array.from(byTx.keys()).sort().forEach(tx => {
+        const group = byTx.get(tx);
+        const debits = new Set(group.filter(e => e.side === "debit").map(e => `${e.account}|${e.amount}`));
+        const credits = new Set(group.filter(e => e.side === "credit").map(e => `${e.account}|${e.amount}`));
+
+        if (debits.size === 1 && credits.size === 1) {
+          const [debitRaw] = Array.from(debits);
+          const [creditRaw] = Array.from(credits);
+          const [fromAcct, debitAmtRaw] = debitRaw.split("|");
+          const [toAcct, creditAmtRaw] = creditRaw.split("|");
+          const debitAmt = Number(debitAmtRaw);
+          const creditAmt = Number(creditAmtRaw);
+
+          if (debitAmt === creditAmt) {
+            balances.set(fromAcct, (balances.get(fromAcct) || 0) - debitAmt);
+            balances.set(toAcct, (balances.get(toAcct) || 0) + creditAmt);
+            txState.set(tx, {
+              state: "RESOLVED",
+              from: fromAcct,
+              to: toAcct,
+              amount: debitAmt
+            });
+          } else {
+            txState.set(tx, {
+              state: "ABSTAIN",
+              reason: "debit_credit_mismatch"
+            });
+          }
+        } else if (debits.size === 0 || credits.size === 0) {
+          txState.set(tx, {
+            state: "INCOMPLETE",
+            reason: "missing_counterpart"
+          });
+        } else {
+          txState.set(tx, {
+            state: "ABSTAIN",
+            reason: "conflicting_structure"
+          });
+        }
+      });
+
+      return {
+        balances: Array.from(balances.entries()).sort((a, b) => a[0].localeCompare(b[0])),
+        txState: Array.from(txState.entries()).sort((a, b) => a[0].localeCompare(b[0]))
+      };
+    }
+
+    function boundedUnion(baseEntries, incomingEntries) {
+      return deduplicate([...baseEntries, ...incomingEntries]);
+    }
+
+    function signature(snapshot) {
+      return JSON.stringify(snapshot);
+    }
+
+    function stateSummary(txStateArray) {
+      const summary = { RESOLVED: 0, INCOMPLETE: 0, ABSTAIN: 0 };
+      txStateArray.forEach(([, info]) => {
+        summary[info.state] = (summary[info.state] || 0) + 1;
+      });
+      return summary;
+    }
+
+    function applyEffects(balanceEffects) {
+      const final = { ...initialBalances };
+      balanceEffects.forEach(([acct, delta]) => {
+        final[acct] = (final[acct] || 0) + delta;
+      });
+      return Object.entries(final).sort((a, b) => a[0].localeCompare(b[0]));
+    }
+
+    function statusClass(state) {
+      if (state === "RESOLVED") return "status-resolved";
+      if (state === "INCOMPLETE") return "status-incomplete";
+      return "status-abstain";
+    }
+
+    const stages = [
+      {
+        id: "local",
+        title: "Local Fragmentation",
+        body: "Partial money evidence exists. Final truth has not yet been accepted.",
+        nodeEntries: localNodes
+      },
+      {
+        id: "sharing",
+        title: "Bounded Structural Sharing",
+        body: "Available structure is exchanged without timestamps, ordering authority, or a coordinator.",
+        nodeEntries: [
+          boundedUnion(localNodes[0], localNodes[1]),
+          boundedUnion(localNodes[1], localNodes[0])
+        ]
+      },
+      {
+        id: "equality",
+        title: "Final Equality",
+        body: "Both nodes now hold the same structural truth.",
+        nodeEntries: [
+          boundedUnion(localNodes[0], localNodes[1]),
+          boundedUnion(localNodes[1], localNodes[0])
+        ]
+      }
+    ];
+
+    const stageLabelMap = {
+      local: "Local Views",
+      sharing: "Bounded Sharing",
+      equality: "Final Equality"
+    };
+
+    const graphCaptionMap = {
+      local: "At the start, both nodes disagree because each sees only partial evidence.",
+      sharing: "Sharing expands structure visibility. The resolver can now distinguish valid, missing, and conflicting patterns.",
+      equality: "Both nodes converge to the same balances and the same transaction outcomes."
+    };
+
+    let stageIndex = 0;
+    let autoplayTimer = null;
+
+    const nodeGrid = document.getElementById("nodeGrid");
+    const timeline = document.getElementById("timeline");
+    const timeline2 = document.getElementById("timeline2");
+    const stageTitle = document.getElementById("stageTitle");
+    const stageBody = document.getElementById("stageBody");
+    const hudTitle = document.getElementById("hudTitle");
+    const hudBody = document.getElementById("hudBody");
+    const hudSummary = document.getElementById("hudSummary");
+    const phaseLabel = document.getElementById("phaseLabel");
+    const equalityLabel = document.getElementById("equalityLabel");
+    const equalityDetail = document.getElementById("equalityDetail");
+    const summaryLabel = document.getElementById("summaryLabel");
+    const graphCaption = document.getElementById("graphCaption");
+    const certificateList = document.getElementById("certificateList");
+    const meaningList = document.getElementById("meaningList");
+    const certMatch = document.getElementById("certMatch");
+    const certMoney = document.getElementById("certMoney");
+    const certDup = document.getElementById("certDup");
+    const certLoss = document.getElementById("certLoss");
+    const verdictMain = document.getElementById("verdictMain");
+    const verdictSub = document.getElementById("verdictSub");
+
+    const stepBtn = document.getElementById("stepBtn");
+    const runBtn = document.getElementById("runBtn");
+    const resetBtn = document.getElementById("resetBtn");
+    const shareBtn = document.getElementById("shareBtn");
+
+    const shareLineTop = document.getElementById("shareLineTop");
+    const shareLineBottom = document.getElementById("shareLineBottom");
+    const convergeLineTop = document.getElementById("convergeLineTop");
+    const convergeLineBottom = document.getElementById("convergeLineBottom");
+    const graphMatchText = document.getElementById("graphMatchText");
+    const graphNodeALocal = document.getElementById("graphNodeALocal");
+    const graphNodeBLocal = document.getElementById("graphNodeBLocal");
+    const graphResolver = document.getElementById("graphResolver");
+    const graphFinalA = document.getElementById("graphFinalA");
+    const graphFinalB = document.getElementById("graphFinalB");
+    const graphFinalALabel = document.getElementById("graphFinalALabel");
+    const graphFinalAValue1 = document.getElementById("graphFinalAValue1");
+    const graphFinalAValue2 = document.getElementById("graphFinalAValue2");
+    const graphFinalBLabel = document.getElementById("graphFinalBLabel");
+    const graphFinalBValue1 = document.getElementById("graphFinalBValue1");
+    const graphFinalBValue2 = document.getElementById("graphFinalBValue2");
+
+    function renderTimeline(target) {
+      target.innerHTML = "";
+      stages.forEach((stage, idx) => {
+        const card = document.createElement("div");
+        card.className = "event-card" + (idx === stageIndex ? " active" : "");
+        card.innerHTML = `
+          <div class="event-step">Step ${idx + 1}</div>
+          <div class="event-title">${stage.title}</div>
+          <div class="event-body">${stage.body}</div>
+        `;
+        target.appendChild(card);
+      });
+    }
+
+    function renderGraph(stage, snapshots) {
+      shareLineTop.style.opacity = stage.id === "local" ? "0.18" : "0.95";
+      shareLineBottom.style.opacity = stage.id === "local" ? "0.18" : "0.95";
+      convergeLineTop.style.opacity = stage.id === "equality" ? "0.95" : "0.18";
+      convergeLineBottom.style.opacity = stage.id === "equality" ? "0.95" : "0.18";
+
+      graphNodeALocal.setAttribute("filter", stage.id === "local" ? "url(#softGlow)" : "");
+      graphNodeBLocal.setAttribute("filter", stage.id === "local" ? "url(#softGlow)" : "");
+      graphResolver.setAttribute("filter", stage.id === "sharing" ? "url(#softGlow)" : "");
+      graphFinalA.setAttribute("filter", stage.id === "equality" ? "url(#softGlow)" : "");
+      graphFinalB.setAttribute("filter", stage.id === "equality" ? "url(#softGlow)" : "");
+
+      const allMatch = new Set(snapshots.map(signature)).size === 1;
+      graphMatchText.textContent = stage.id === "equality" && allMatch ? "MATCH = TRUE" : "MATCH = FALSE";
+      graphMatchText.setAttribute("fill", stage.id === "equality" && allMatch ? "#29c47f" : "#73a7ff");
+
+      if (stage.id === "local") {
+        graphFinalALabel.textContent = "truth not yet shared";
+        graphFinalAValue1.textContent = "pending";
+        graphFinalAValue2.textContent = "pending";
+
+        graphFinalBLabel.textContent = "truth not yet shared";
+        graphFinalBValue1.textContent = "pending";
+        graphFinalBValue2.textContent = "pending";
+      } else if (stage.id === "sharing") {
+        graphFinalALabel.textContent = "converging";
+        graphFinalAValue1.textContent = "structure";
+        graphFinalAValue2.textContent = "aligning";
+
+        graphFinalBLabel.textContent = "converging";
+        graphFinalBValue1.textContent = "structure";
+        graphFinalBValue2.textContent = "aligning";
+      } else {
+        graphFinalALabel.textContent = "final structural truth";
+        graphFinalAValue1.textContent = "VillageA = 500";
+        graphFinalAValue2.textContent = "VillageB = 1500";
+
+        graphFinalBLabel.textContent = "final structural truth";
+        graphFinalBValue1.textContent = "VillageA = 500";
+        graphFinalBValue2.textContent = "VillageB = 1500";
+      }
+
+      graphCaption.textContent = graphCaptionMap[stage.id];
+    }
+
+    function renderNodes(stage, snapshots) {
+      nodeGrid.innerHTML = "";
+      stage.nodeEntries.forEach((entries, idx) => {
+        const snapshot = snapshots[idx];
+        const summary = stateSummary(snapshot.txState);
+        const finalAbs = applyEffects(snapshot.balances);
+
+        const entriesHtml = deduplicate(entries).map(entry => `
+          <div class="entry">${entry.tx} | ${entry.side} | ${entry.account} | ${entry.amount}</div>
+        `).join("");
+
+        const txHtml = snapshot.txState.map(([tx, info]) => {
+          const detail = info.state === "RESOLVED"
+            ? `${info.from} -> ${info.to} | amount=${info.amount}`
+            : `reason=${info.reason}`;
+          return `
+            <div class="tx-card">
+              <div class="tx-top">
+                <div class="tx-id">${tx}</div>
+                <div class="tx-status ${statusClass(info.state)}">${info.state}</div>
+              </div>
+              <div class="subtle mono">${detail}</div>
+            </div>
+          `;
+        }).join("");
+
+        const balancesHtml = finalAbs.map(([acct, amt]) => `
+          <div class="balance-box">
+            <div class="title">${acct}</div>
+            <div class="balance-value mono">${amt}</div>
+          </div>
+        `).join("");
+
+        const node = document.createElement("div");
+        node.className = "node-card";
+        node.innerHTML = `
+          <div class="node-head">
+            <div>
+              <div class="node-name">Node ${idx === 0 ? "A" : "B"}</div>
+              <div class="subtle">${deduplicate(entries).length} unique fragments visible</div>
+            </div>
+            <div class="pill">
+              <span class="dot"></span>
+              <span class="mono">R:${summary.RESOLVED} I:${summary.INCOMPLETE} A:${summary.ABSTAIN}</span>
+            </div>
+          </div>
+
+          <div class="title">Visible Fragments</div>
+          <div class="entry-list">${entriesHtml}</div>
+
+          <div class="title" style="margin-top:12px;">Absolute Balances</div>
+          <div class="balance-grid">${balancesHtml}</div>
+
+          <div class="title" style="margin-top:12px;">Transaction Outcomes</div>
+          <div class="tx-list">${txHtml}</div>
+        `;
+        nodeGrid.appendChild(node);
+      });
+    }
+
+    function renderCertificate(stage, snapshots) {
+      const finalSnapshot = snapshots[0];
+      const finalSummary = stateSummary(finalSnapshot.txState);
+      const finalAbs = applyEffects(finalSnapshot.balances);
+      const totalInitial = Object.values(initialBalances).reduce((a, b) => a + b, 0);
+      const totalFinal = finalAbs.reduce((sum, [, amount]) => sum + amount, 0);
+      const allMatch = new Set(snapshots.map(signature)).size === 1;
+
+      const txMap = Object.fromEntries(finalSnapshot.txState);
+      const matchFlag = stage.id === "equality" && allMatch;
+      const moneyFlag = totalInitial === totalFinal;
+      const dupFlag = !!(txMap.M100 && txMap.M100.state === "RESOLVED");
+      const lossFlag = !!(txMap.M200 && txMap.M200.state === "INCOMPLETE" && txMap.M300 && txMap.M300.state === "INCOMPLETE");
+      const mismatchFlag = !!(txMap.M400 && txMap.M400.state === "ABSTAIN");
+      const conflictFlag = !!(txMap.M500 && txMap.M500.state === "ABSTAIN");
+
+      certMatch.textContent = matchFlag ? "TRUE" : "FALSE";
+      certMoney.textContent = moneyFlag ? "TRUE" : "FALSE";
+      certDup.textContent = dupFlag ? "TRUE" : "FALSE";
+      certLoss.textContent = lossFlag ? "TRUE" : "FALSE";
+
+      const cert = [
+        ["all_nodes_equal", matchFlag],
+        ["money_conserved", moneyFlag],
+        ["duplicate_safe", dupFlag],
+        ["no_loss_forced", lossFlag],
+        ["mismatch_contained", mismatchFlag],
+        ["conflict_contained", conflictFlag]
+      ];
+
+      certificateList.innerHTML = cert.map(([label, value]) => `
+        <div class="checkitem">
+          <span class="checkdot" style="background:${value ? '#29c47f' : '#73a7ff'};"></span>
+          <span class="mono">${label} = ${value}</span>
+        </div>
+      `).join("");
+
+      meaningList.innerHTML = [
+        "money was never duplicated",
+        "money was never falsely moved from incomplete structure",
+        "conflicts did not corrupt the ledger",
+        "final truth emerged from structure"
+      ].map(text => `
+        <div class="checkitem">
+          <span class="checkdot"></span>
+          <span>${text}</span>
+        </div>
+      `).join("");
+
+      if (matchFlag) {
+        verdictMain.textContent = "Correctness emerged from structure.";
+        verdictSub.textContent = "Both isolated nodes reached the same final financial truth without relying on time, order, or coordination.";
+      } else if (stage.id === "sharing") {
+        verdictMain.textContent = "Structural alignment is in progress.";
+        verdictSub.textContent = "More structure is now visible, but the final equality claim is not yet the active conclusion.";
+      } else {
+        verdictMain.textContent = "Correctness is not yet fully established.";
+        verdictSub.textContent = "Partial evidence is visible, but final financial truth is not yet shared across nodes.";
+      }
+
+      summaryLabel.textContent = `R:${finalSummary.RESOLVED} I:${finalSummary.INCOMPLETE} A:${finalSummary.ABSTAIN}`;
+      hudSummary.textContent = `R:${finalSummary.RESOLVED} I:${finalSummary.INCOMPLETE} A:${finalSummary.ABSTAIN}`;
+    }
+
+    function render() {
+      const stage = stages[stageIndex];
+      const snapshots = stage.nodeEntries.map(resolve);
+      const allMatch = new Set(snapshots.map(signature)).size === 1;
+
+      stageTitle.textContent = stage.title;
+      stageBody.textContent = stage.body;
+      hudTitle.textContent = stage.title;
+      hudBody.textContent = stage.body;
+
+      phaseLabel.textContent = stageLabelMap[stage.id];
+      equalityLabel.textContent =
+        stage.id === "local" ? "Before: Mixed" :
+        stage.id === "sharing" ? "During: Aligning" :
+        "After: Equal";
+
+      equalityDetail.textContent =
+        stage.id === "local" ? "Nodes differ because structure is incomplete" :
+        stage.id === "sharing" ? "Sharing expands structural visibility" :
+        (allMatch ? "Both nodes now hold the same final truth" : "Alignment in progress");
+
+      renderTimeline(timeline);
+      renderTimeline(timeline2);
+      renderGraph(stage, snapshots);
+      renderNodes(stage, snapshots);
+      renderCertificate(stage, snapshots);
+    }
+
+    function stopAutoplay() {
+      if (autoplayTimer) {
+        clearInterval(autoplayTimer);
+        autoplayTimer = null;
+      }
+      runBtn.textContent = "Run Full Demo";
+    }
+
+    function nextStep() {
+      stageIndex = Math.min(stageIndex + 1, stages.length - 1);
+      render();
+    }
+
+    function resetDemo() {
+      stopAutoplay();
+      stageIndex = 0;
+      render();
+
+      const demoStart = document.getElementById("demoStart");
+      if (demoStart) {
+        demoStart.scrollIntoView({ behavior: "smooth", block: "start" });
+      } else {
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }
+    }
+
+    function jumpToFinal() {
+      stopAutoplay();
+      stageIndex = stages.length - 1;
+      render();
+    }
+
+    function runFullDemo() {
+      stopAutoplay();
+      stageIndex = 0;
+      render();
+      runBtn.textContent = "Running...";
+      autoplayTimer = setInterval(() => {
+        if (stageIndex >= stages.length - 1) {
+          stopAutoplay();
+          return;
+        }
+        stageIndex += 1;
+        render();
+      }, 1400);
+    }
+
+    stepBtn.addEventListener("click", nextStep);
+    runBtn.addEventListener("click", runFullDemo);
+    resetBtn.addEventListener("click", resetDemo);
+    shareBtn.addEventListener("click", jumpToFinal);
+
+    render();
+  </script>
+</body>
+</html>
