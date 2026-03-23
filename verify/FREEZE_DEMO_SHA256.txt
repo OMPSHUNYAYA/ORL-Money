@@ -1,0 +1,5 @@
+ORL-Money Demo Freeze — SHA256
+
+orl_money_demo_reference.py = e9f06c72053c174f7e4ce804da42c30737561e00e024cf731f14da662a040be7
+orl_money_demo_multinode.py = 2694603807105c3d30bc807359fb1195f60736f836b6d2d09f15d8d26a9127da
+orl_money_demo_v1.html      = 8ae37fd305cf3c47d2d003a34b8a8a92a8ee1d8ef5cc8806de57204639a077fe

@@ -1,0 +1,59 @@
+ORL-Money Verification
+
+1. Run reference demo:
+   python demo/orl_money_demo_reference.py
+
+2. Observe in reference demo:
+   - identical results across runs
+   - deterministic structural convergence
+   - no dependence on time, order, or synchronization
+   - incomplete structure remains INCOMPLETE
+   - conflicting structure remains ABSTAIN
+   - no false money movement
+   - money conservation preserved
+
+3. Expected final result (reference demo):
+   - VillageA = 500
+   - VillageB = 1500
+
+4. Expected transaction states (reference demo):
+   - M100 = RESOLVED
+   - M200 = INCOMPLETE
+   - M300 = INCOMPLETE
+   - M400 = ABSTAIN
+   - M500 = ABSTAIN
+
+5. Run multi-node demo:
+   python demo/orl_money_demo_multinode.py
+
+6. Observe in multi-node demo:
+   - three independent nodes begin with different fragments
+   - bounded multi-round sharing occurs
+   - no dependence on time, order, or coordinator
+   - valid transfers resolve only after sufficient structure is shared
+   - conflicting structure remains ABSTAIN
+   - all nodes converge after round 2
+   - money conservation preserved
+
+7. Expected final result (multi-node demo):
+   - VillageA = 650
+   - VillageB = 1300
+   - VillageC = 1050
+
+8. Expected transaction states (multi-node demo):
+   - M100 = RESOLVED
+   - M200 = RESOLVED
+   - M300 = RESOLVED
+   - M400 = ABSTAIN
+   - M500 = ABSTAIN
+
+9. Verify hashes:
+   certutil -hashfile demo\orl_money_demo_reference.py SHA256
+   certutil -hashfile demo\orl_money_demo_multinode.py SHA256
+   certutil -hashfile demo\orl_money_demo_v1.html SHA256
+
+10. Confirm:
+   - hashes match verify\FREEZE_DEMO_SHA256.txt
+
+Result:
+Deterministic structural reconciliation confirmed for the ORL-Money demo layer, including reference and multi-node distributed convergence.
