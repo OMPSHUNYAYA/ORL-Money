@@ -1,0 +1,193 @@
+📜 Open Standard License — ORL-Money Reference Implementation
+
+ORL-Money — Orderless Ledger (Money System)
+Shunyaya Structural Ledger Model
+
+Legal Status
+
+This license is an open permissive Open Standard license for the ORL-Money reference implementation.
+
+To the maximum extent permitted by applicable law, this license grants rights similar in spirit to permissive open-source licenses, while preserving truthful representation requirements for the ORL-Money name and reference implementation.
+
+If any provision is found unenforceable, the remaining provisions remain in effect.
+
+Permission
+
+Permission is hereby granted, free of charge, to any person or organization to:
+
+use
+execute
+study
+reproduce
+publish
+distribute
+modify
+implement
+extend
+
+the ORL-Money reference implementation, in whole or in part, for commercial or non-commercial use, subject only to the representation and naming conditions defined in this license.
+
+No registration, fees, or approval required.
+
+No Restrictions on Use
+
+This reference implementation imposes no restrictions on usage, except:
+
+truthful representation
+non-misleading use of the ORL-Money name
+
+Attribution is not required.
+No endorsement or certification is implied.
+No runtime obligations apply.
+
+Correctness is governed by:
+
+structural_validity = complete AND consistent
+
+—not by licensing terms.
+
+Representation & Naming
+
+Modified or extended implementations:
+
+must not be presented as the canonical ORL-Money reference implementation unless structural behavior is preserved
+must not imply official authorship, certification, or endorsement
+
+Use of the name “ORL-Money” must not imply:
+
+endorsement
+certification
+governance authority
+official compliance
+
+Recommended Attribution (Optional)
+
+Preferred form:
+
+Implements ORL-Money — Orderless Ledger (Shunyaya Structural Ledger Model)
+
+Attribution must not imply endorsement.
+
+Scope of the Reference Implementation
+
+This release includes:
+
+financial transaction structures
+debit/credit pairing models
+structural resolution logic
+demo applications (Python + HTML)
+outputs and reference outputs
+validation traces
+
+ORL-Money defines a deterministic financial model where correctness emerges from structure:
+
+resolve(structure) ->
+    RESOLVED     if complete and consistent
+    INCOMPLETE   if required parts are missing
+    ABSTAIN      if structure is conflicting
+
+What This Demonstrates
+
+• financial correctness from fragmented inputs
+• independence from transaction ordering
+• independence from timestamps and synchronized clocks
+• safe handling of incomplete financial data
+• conflict containment without corruption
+• deterministic convergence across independent nodes
+• reproducible outcomes
+
+Conformance
+
+An implementation is considered compatible if it preserves:
+
+structure-based correctness
+independence from order as authority
+independence from synchronized time
+deterministic convergence
+reproducibility under equivalent inputs
+explicit INCOMPLETE and ABSTAIN handling
+
+Conformance is judged by observable behavior, not internal implementation.
+
+Relationship to Shunyaya Framework
+
+ORL-Money is part of the broader Shunyaya Structural Universal Mathematics (SSUM) framework.
+
+It builds on:
+
+STOCRS → structure-first computation
+SSUM-Time → time independence
+ORL → structural ledger truth
+
+Architecture License
+
+The conceptual architecture and documentation are licensed under:
+
+Creative Commons Attribution-NonCommercial 4.0 (CC BY-NC 4.0)
+
+Permitted:
+
+research
+academic use
+study and reproduction
+non-commercial distribution
+
+Commercial use of architecture text is not permitted under this license.
+
+Full license:
+https://creativecommons.org/licenses/by-nc/4.0/
+
+Responsibility
+
+Use of ORL-Money in:
+
+financial systems
+banking
+distributed infrastructure
+telecom systems
+safety-critical environments
+
+is entirely at the user’s own responsibility.
+
+ORL-Money provides:
+
+deterministic structural reconciliation
+correctness from structure
+safe handling of incomplete/conflicting data
+
+It does not provide:
+
+financial guarantees
+regulatory compliance
+fraud elimination
+operational guarantees
+system-level fault tolerance
+
+No Warranty
+
+THE ORL-Money REFERENCE IMPLEMENTATION IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND.
+
+THIS INCLUDES, BUT IS NOT LIMITED TO:
+
+MERCHANTABILITY
+FITNESS FOR A PARTICULAR PURPOSE
+NON-INFRINGEMENT
+
+IN NO EVENT SHALL THE AUTHORS OR CONTRIBUTORS BE LIABLE FOR ANY CLAIM, DAMAGES, OR OTHER LIABILITY ARISING FROM USE OF THIS IMPLEMENTATION.
+
+Closing Statement
+
+ORL-Money explores a fundamental possibility:
+
+Financial correctness can emerge from structure, not from time, order, or synchronization.
+
+It is released openly to encourage:
+
+independent validation
+real-world testing
+safe experimentation
+broader adoption of structure-first systems
+
+Money systems, traditionally governed by sequence and timing, may also be understood as processes of structural validation.
+
+ORL-Money is offered as a reference model for that shift.
