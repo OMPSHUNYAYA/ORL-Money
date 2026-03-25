@@ -10,6 +10,8 @@
 ![Conflict-Safe](https://img.shields.io/badge/Conflict-Abstention-orange)
 ![Open-Standard](https://img.shields.io/badge/Reference%20Implementation-Open%20Standard-blue)
 
+![ORL-Money Verify](https://github.com/OMPSHUNYAYA/ORL-Money/actions/workflows/orl-money-verify.yml/badge.svg)
+
 **Deterministic money reconciliation where correctness emerges from structure.**
 
 **Structure-Based Financial Resolution • Open Reference Implementation**
