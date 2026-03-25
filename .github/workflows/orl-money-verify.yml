@@ -1,0 +1,62 @@
+name: ORL-Money Verify
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Verify frozen demo hashes
+        run: |
+          expected_ref=$(grep 'orl_money_demo_reference.py' verify/FREEZE_DEMO_SHA256.txt | awk '{print $NF}' | tr -d '\r')
+          expected_multi=$(grep 'orl_money_demo_multinode.py' verify/FREEZE_DEMO_SHA256.txt | awk '{print $NF}' | tr -d '\r')
+          expected_html=$(grep 'orl_money_demo_v1.html' verify/FREEZE_DEMO_SHA256.txt | awk '{print $NF}' | tr -d '\r')
+
+          actual_ref=$(sha256sum demo/orl_money_demo_reference.py | awk '{print $1}')
+          actual_multi=$(sha256sum demo/orl_money_demo_multinode.py | awk '{print $1}')
+          actual_html=$(sha256sum demo/orl_money_demo_v1.html | awk '{print $1}')
+
+          [ "$actual_ref" = "$expected_ref" ] || (echo "reference demo hash mismatch" && exit 1)
+          [ "$actual_multi" = "$expected_multi" ] || (echo "multi-node demo hash mismatch" && exit 1)
+          [ "$actual_html" = "$expected_html" ] || (echo "html demo hash mismatch" && exit 1)
+
+      - name: Run reference demo
+        run: python demo/orl_money_demo_reference.py > reference_output.txt
+
+      - name: Verify reference demo output
+        run: |
+          grep -q 'VillageA.*500' reference_output.txt
+          grep -q 'VillageB.*1500' reference_output.txt
+          grep -q 'M100.*RESOLVED' reference_output.txt
+          grep -q 'M200.*INCOMPLETE' reference_output.txt
+          grep -q 'M300.*INCOMPLETE' reference_output.txt
+          grep -q 'M400.*ABSTAIN' reference_output.txt
+          grep -q 'M500.*ABSTAIN' reference_output.txt
+
+      - name: Run multi-node demo
+        run: python demo/orl_money_demo_multinode.py > multinode_output.txt
+
+      - name: Verify multi-node demo output
+        run: |
+          grep -q 'VillageA.*650' multinode_output.txt
+          grep -q 'VillageB.*1300' multinode_output.txt
+          grep -q 'VillageC.*1050' multinode_output.txt
+          grep -q 'M100.*RESOLVED' multinode_output.txt
+          grep -q 'M200.*RESOLVED' multinode_output.txt
+          grep -q 'M300.*RESOLVED' multinode_output.txt
+          grep -q 'M400.*ABSTAIN' multinode_output.txt
+          grep -q 'M500.*ABSTAIN' multinode_output.txt
