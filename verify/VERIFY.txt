@@ -1,59 +1,347 @@
 ORL-Money Verification
 
-1. Run reference demo:
-   python demo/orl_money_demo_reference.py
+Purpose
 
-2. Observe in reference demo:
-   - identical results across runs
-   - deterministic structural convergence
-   - no dependence on time, order, or synchronization
-   - incomplete structure remains INCOMPLETE
-   - conflicting structure remains ABSTAIN
-   - no false money movement
-   - money conservation preserved
+This file defines the recommended verification procedure for the current ORL-Money reference demonstrations.
 
-3. Expected final result (reference demo):
-   - VillageA = 500
-   - VillageB = 1500
+The governing relation is:
 
-4. Expected transaction states (reference demo):
-   - M100 = RESOLVED
-   - M200 = INCOMPLETE
-   - M300 = INCOMPLETE
-   - M400 = ABSTAIN
-   - M500 = ABSTAIN
+same initial balances + same deduplicated supported money fragments + same resolver rules -> same bounded financial snapshot
 
-5. Run multi-node demo:
-   python demo/orl_money_demo_multinode.py
+The verification procedure separates:
 
-6. Observe in multi-node demo:
-   - three independent nodes begin with different fragments
-   - bounded multi-round sharing occurs
-   - no dependence on time, order, or coordinator
-   - valid transfers resolve only after sufficient structure is shared
-   - conflicting structure remains ABSTAIN
-   - all nodes converge after round 2
-   - money conservation preserved
+1. reference-scenario checking
+2. artifact-identity checking
 
-7. Expected final result (multi-node demo):
-   - VillageA = 650
-   - VillageB = 1300
-   - VillageC = 1050
+A successful scenario check confirms the documented outputs for the committed examples.
 
-8. Expected transaction states (multi-node demo):
-   - M100 = RESOLVED
-   - M200 = RESOLVED
-   - M300 = RESOLVED
-   - M400 = ABSTAIN
-   - M500 = ABSTAIN
+A successful SHA-256 comparison confirms that the local file bytes match the frozen artifacts.
 
-9. Verify hashes:
-   certutil -hashfile demo\orl_money_demo_reference.py SHA256
-   certutil -hashfile demo\orl_money_demo_multinode.py SHA256
-   certutil -hashfile demo\orl_money_demo_v1.html SHA256
+Neither activity by itself proves universal financial correctness, cross-language conformance, settlement validity, security, or production readiness.
 
-10. Confirm:
-   - hashes match verify\FREEZE_DEMO_SHA256.txt
 
-Result:
-Deterministic structural reconciliation confirmed for the ORL-Money demo layer, including reference and multi-node distributed convergence.
+1. Run the Two-Node Reference Demonstration
+
+From the repository root, run:
+
+python demo/orl_money_demo_reference.py
+
+
+2. Confirm the Two-Node Transaction States
+
+Expected:
+
+M100 = RESOLVED
+M200 = INCOMPLETE
+M300 = INCOMPLETE
+M400 = ABSTAIN
+M500 = ABSTAIN
+
+Expected state summary:
+
+RESOLVED   = 1
+INCOMPLETE = 2
+ABSTAIN    = 2
+
+Equivalent compact summary:
+
+R:1 I:2 A:2
+
+
+3. Confirm the Two-Node Balance Results
+
+Expected resolved balance effects:
+
+VillageA = -500
+VillageB = +500
+
+Expected final demonstrated balances:
+
+VillageA = 500
+VillageB = 1500
+
+Expected checks:
+
+all_nodes_equal            = True
+money_conserved            = True
+duplicate_safe             = True
+no_loss_forced             = True
+mismatch_contained         = True
+conflict_contained         = True
+total_money_initial        = 2000
+total_money_final          = 2000
+net_resolved_balance_delta = 0
+
+
+4. Confirm the Two-Node Interpretation
+
+For the committed scenario:
+
+- M100 demonstrates one matching debit-credit pair and exact duplicate absorption.
+- M200 and M300 remain INCOMPLETE because a counterpart is missing.
+- M400 becomes ABSTAIN because the debit and credit amounts differ.
+- M500 becomes ABSTAIN because the transaction contains a demonstrated multiplicity conflict.
+- INCOMPLETE and ABSTAIN transactions produce no demonstrated balance effect.
+- The two nodes produce the same resolver snapshot after both hold the same deduplicated supported fragment set.
+
+This is same-evidence node equality.
+
+It is not consensus, settlement, immutable finality, or proof of general double-spend prevention.
+
+
+5. Run the Three-Node Demonstration
+
+From the repository root, run:
+
+python demo/orl_money_demo_multinode.py
+
+
+6. Confirm the Three-Node Transaction States
+
+Expected:
+
+M100 = RESOLVED
+M200 = RESOLVED
+M300 = RESOLVED
+M400 = ABSTAIN
+M500 = ABSTAIN
+
+Expected state summary:
+
+RESOLVED = 3
+ABSTAIN  = 2
+
+Equivalent compact summary:
+
+R:3 I:0 A:2
+
+
+7. Confirm the Three-Node Balance Results
+
+Expected final demonstrated balances:
+
+VillageA = 650
+VillageB = 1300
+VillageC = 1050
+
+Expected equality progression:
+
+before_match  = False
+round_1_match = False
+round_2_match = True
+
+Expected checks:
+
+all_nodes_equal            = True
+money_conserved            = True
+mismatch_contained         = True
+conflict_contained         = True
+total_money_initial        = 3000
+total_money_final          = 3000
+net_resolved_balance_delta = 0
+
+
+8. Confirm the Three-Node Interpretation
+
+For the committed scenario:
+
+- the three nodes begin with different supported fragment sets;
+- two scripted sharing rounds are executed;
+- M100, M200, and M300 become RESOLVED after matching counterparts are present;
+- M400 remains ABSTAIN because of an amount mismatch;
+- M500 remains ABSTAIN because of a demonstrated multiplicity conflict;
+- all nodes produce the same resolver snapshot after round 2;
+- the demonstrated total balance remains unchanged.
+
+The scripted sharing sequence is a test mechanism.
+
+It is not a consensus, reliable-broadcast, networking, or settlement protocol.
+
+
+9. Run the Browser Demonstration
+
+Open:
+
+demo/orl_money_demo_v1.html
+
+Select:
+
+Run Full Demo
+
+Expected final browser result:
+
+MATCH = TRUE
+
+Confirm that both nodes show the same:
+
+- transaction states
+- state summary
+- resolved balance effects
+- final demonstrated balances
+
+The browser and two-node Python demonstrations are intended to express the same supplied scenario.
+
+Universal Python-browser equivalence is not established in the current release.
+
+
+10. Repeatability Check
+
+Run each Python demonstration more than once without modifying the files or scenario data.
+
+Expected:
+
+- identical transaction states
+- identical state counts
+- identical balance effects
+- identical final demonstrated balances
+- identical node-equality results
+- identical total-balance checks
+
+This confirms repeatability for the unchanged committed scenarios.
+
+It does not establish universal cross-platform or independently implemented conformance.
+
+
+11. Verify Frozen Artifact Identity on Windows
+
+Run:
+
+certutil -hashfile demo\orl_money_demo_reference.py SHA256
+certutil -hashfile demo\orl_money_demo_multinode.py SHA256
+certutil -hashfile demo\orl_money_demo_v1.html SHA256
+
+Compare each result with:
+
+verify\FREEZE_DEMO_SHA256.txt
+
+
+12. Verify Frozen Artifact Identity on Linux or macOS
+
+Run:
+
+sha256sum demo/orl_money_demo_reference.py
+sha256sum demo/orl_money_demo_multinode.py
+sha256sum demo/orl_money_demo_v1.html
+
+Compare each result with:
+
+verify/FREEZE_DEMO_SHA256.txt
+
+
+13. Meaning of a Matching Hash
+
+The applicable relation is:
+
+same bytes -> same SHA-256 hash
+
+A successful comparison confirms that the local file bytes match the frozen artifact.
+
+It does not by itself prove:
+
+- expected behavioral output
+- complete conformance
+- cross-engine equality
+- malformed-input safety
+- authorization
+- payment validity
+- settlement validity
+- fraud prevention
+- security
+- universal financial correctness
+- production readiness
+
+
+14. Pass Criteria
+
+The current supplied release passes its documented reference-scenario check when:
+
+Two-node scenario:
+
+- all documented transaction states match
+- R:1 I:2 A:2
+- VillageA = 500
+- VillageB = 1500
+- all_nodes_equal = True
+- total_money_initial = 2000
+- total_money_final = 2000
+- net_resolved_balance_delta = 0
+
+Three-node scenario:
+
+- all documented transaction states match
+- R:3 I:0 A:2
+- VillageA = 650
+- VillageB = 1300
+- VillageC = 1050
+- round_2_match = True
+- total_money_initial = 3000
+- total_money_final = 3000
+- net_resolved_balance_delta = 0
+
+Browser scenario:
+
+- final MATCH = TRUE
+- documented states and balances match the two-node scenario
+
+Artifact identity:
+
+- every computed SHA-256 hash matches the committed frozen value
+
+
+15. Failure Conditions
+
+Treat the current supplied scenario check as failed if:
+
+- a committed demo does not execute;
+- a documented transaction state differs;
+- a documented final balance differs;
+- the two-node equality check is false after sharing;
+- the three-node equality check is false after round 2;
+- the demonstrated total balance changes;
+- an INCOMPLETE or ABSTAIN transaction produces a balance effect;
+- the browser result differs from the documented two-node scenario;
+- a frozen SHA-256 hash does not match.
+
+A failed check may indicate:
+
+- modified artifacts
+- implementation drift
+- environment incompatibility
+- documentation mismatch
+- an implementation defect
+
+It does not by itself identify the cause.
+
+
+16. Current Boundary
+
+The current verification procedure does not establish:
+
+- authorization
+- identity or account ownership
+- available funds
+- account posting
+- payment execution
+- clearing or settlement
+- immutable finality
+- fraud prevention
+- cryptographic security
+- consensus
+- Byzantine fault tolerance
+- reliable broadcast
+- complete double-spend prevention
+- complete malformed-input validation
+- universal order independence
+- universal financial correctness
+- production readiness
+
+The strongest justified current relation is:
+
+same initial balances + same deduplicated supported money fragments + same resolver rules -> same bounded transaction states and demonstrated balance projection
+
+
+Result
+
+The ORL-Money reference scenarios are verified when the documented outputs match and the frozen artifact hashes agree.
+
+This confirms bounded deterministic reconciliation behavior for the committed examples only.
