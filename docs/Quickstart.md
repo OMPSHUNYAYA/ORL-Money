@@ -1,414 +1,553 @@
 # ⭐ ORL-Money — Quickstart
 
-**Orderless Ledger — Money System**
+**Deterministic Bounded Financial Reconciliation**
 
-**Deterministic • Order-Free • Time-Independent • Structure-Based Financial Resolution**
+ORL-Money is a public deterministic reference model for bounded reconciliation of supported money fragments.
 
-**No Time • No Order • No Coordinator**
+The governing relation is:
+
+`same initial balances + same deduplicated supported money fragments + same resolver rules -> same bounded financial snapshot`
+
+ORL-Money is developed within the Shunyaya Framework.
 
 ---
 
-## ⚡ 30-Second Proof
+## 1. Run the Two-Node Reference Demo
 
-Run the reference implementation:
+From the repository root:
 
-```
+```text
 python demo/orl_money_demo_reference.py
 ```
 
-### What to observe
+The demo uses:
 
-• Two independent nodes start with different money fragments  
-• No timestamps are used  
-• No ordering is enforced  
-• No synchronization occurs  
-• Some transactions remain incomplete  
-• Some transactions abstain due to conflicts  
-• Final results match across nodes  
+```text
+VillageA = 1000
+VillageB = 1000
+```
 
-### Conclusion
+Expected final transaction states:
 
-Different inputs  
-Different order  
-No time  
+```text
+M100 -> RESOLVED
+M200 -> INCOMPLETE
+M300 -> INCOMPLETE
+M400 -> ABSTAIN
+M500 -> ABSTAIN
+```
 
-→ Same final financial truth  
+Expected state summary:
 
-`correctness = resolve(structure)`
+```text
+R:1 I:2 A:2
+```
+
+Expected final demonstrated balances:
+
+```text
+VillageA = 500
+VillageB = 1500
+```
+
+Expected equality result:
+
+```text
+all_nodes_equal = True
+```
 
 ---
 
-## ⚡ Visual Demo
+## 2. Open the Browser Demo
 
 Open:
 
 `demo/orl_money_demo_v1.html`
 
-### What to observe
+Then select:
 
-• Two independent financial systems (VillageA, VillageB)  
-• Fragmented transaction visibility  
-• Step-by-step bounded sharing  
-• Structural classification of transactions  
-• Final convergence to identical balances  
+**Run Full Demo**
+
+The browser demonstration moves through:
+
+1. local fragmentation
+2. bounded structural sharing
+3. final same-evidence equality
+
+Expected final browser result:
+
+```text
+MATCH = TRUE
+```
+
+The browser and two-node Python demonstrations use the same main scenario.
 
 ---
 
-## ⚡ Multi-Node Demo (Advanced)
+## 3. Run the Three-Node Demo
 
-Run:
+From the repository root:
 
-```
+```text
 python demo/orl_money_demo_multinode.py
 ```
 
-### What this shows
+Expected final transaction states:
 
-• three independent nodes (VillageA, VillageB, VillageC)  
-• fragmented transaction visibility across nodes  
-• multi-round bounded structural sharing  
-• convergence without global coordination  
-
-### Expected outcome
-
+```text
+M100 -> RESOLVED
+M200 -> RESOLVED
+M300 -> RESOLVED
+M400 -> ABSTAIN
+M500 -> ABSTAIN
 ```
+
+Expected state summary:
+
+```text
+R:3 I:0 A:2
+```
+
+Expected final demonstrated balances:
+
+```text
 VillageA = 650
 VillageB = 1300
 VillageC = 1050
 ```
 
-This demonstrates deterministic convergence across multiple nodes under delayed and partial propagation.
+Expected equality progression:
 
----
-
-## 🧭 Core Principle
-
-`correctness = resolve(structure)`
-
----
-
-## ⚡ What ORL-Money Demonstrates
-
-ORL-Money proves that a financial system can:
-
-• operate without timestamps  
-• operate without global ordering  
-• operate without synchronization  
-• safely handle incomplete information  
-• detect and isolate conflicts  
-• converge deterministically  
-
----
-
-## 🔍 Structural Money Model
-
-Each transaction is treated as structure, not sequence:
-
-`TX = { debit_entry, credit_entry }`
-
-### Resolution Rules
-
-• exactly one debit and one credit with equal amount → **RESOLVED**  
-• missing debit or credit → **INCOMPLETE**  
-• multiple or mismatched entries → **ABSTAIN**  
-
-### Example
-
-```
-Debit:  VillageA -500  
-Credit: VillageB +500  
-→ RESOLVED
-
-Debit:  VillageA -500  
-Credit: VillageB +700  
-→ ABSTAIN
-
-Only debit present  
-→ INCOMPLETE
+```text
+before_match  = False
+round_1_match = False
+round_2_match = True
 ```
 
----
+The two sharing rounds are a scripted test sequence.
 
-## 🚫 What ORL-Money Does NOT Do
-
-ORL-Money does not:
-
-• use timestamps  
-• depend on transaction order  
-• require consensus protocols  
-• require synchronized clocks  
-• assume complete information upfront  
-• rely on probabilistic validation  
+They are not a consensus, reliable-broadcast, networking, or settlement protocol.
 
 ---
 
-## ✅ What ORL-Money Does
+## 4. Core Resolution Model
 
-ORL-Money:
+The committed demonstrations use fragments with four fields:
 
-• accepts fragmented financial states  
-• allows independent node operation  
-• supports bounded sharing  
-• resolves only structurally valid transactions  
-• safely rejects conflicting structures  
-• guarantees deterministic convergence  
-
----
-
-## ⚙️ Minimum Requirements
-
-• Python 3.9+  
-• Standard library only  
-• No external dependencies  
-• Runs fully offline  
-• Browser (for HTML demo)  
-
----
-
-## 📁 Repository Structure
-
+```text
+tx
+side
+account
+amount
 ```
-ORL-MONEY/
 
-├── README.md  
-├── LICENSE  
-│  
-├── demo  
-│   ├── orl_money_demo_reference.py  
-│   ├── orl_money_demo_multinode.py  
-│   └── orl_money_demo_v1.html  
-│  
-├── docs  
-│   ├── FAQ.md  
-│   ├── Quickstart.md  
-│   ├── Test-Guide.md  
-│   ├── Proof-Sketch.md  
+Example:
+
+```text
+{"tx": "M100", "side": "debit", "account": "VillageA", "amount": 500}
+```
+
+For the current supplied model:
+
+`one debit + one credit + matching amount -> RESOLVED`
+
+`missing counterpart -> INCOMPLETE`
+
+`debit_credit_mismatch OR demonstrated_same_transaction_multiplicity_conflict -> ABSTAIN`
+
+Only `RESOLVED` transactions contribute to the demonstrated balance projection.
+
+---
+
+## 5. Meaning of the Three States
+
+### RESOLVED
+
+A supported transaction has:
+
+- one debit
+- one credit
+- matching amounts
+
+The resolver applies equal and opposite balance effects.
+
+`from_account_delta = -amount`
+
+`to_account_delta = +amount`
+
+### INCOMPLETE
+
+A supported transaction is missing its debit or credit counterpart.
+
+Expected demonstrated balance effect:
+
+`0`
+
+### ABSTAIN
+
+The committed scenarios demonstrate `ABSTAIN` for:
+
+- debit-credit amount mismatch
+- same-transaction multiplicity conflict
+
+Expected demonstrated balance effect:
+
+`0`
+
+`ABSTAIN` is a bounded resolver classification.
+
+It is not settlement rejection, fraud detection, or legal invalidation.
+
+---
+
+## 6. Exact Duplicate Absorption
+
+The two-node scenario includes the same `M100` credit fragment twice.
+
+The duplicate key is:
+
+`(tx, side, account, amount)`
+
+Expected behavior:
+
+```text
+node_b_raw_fragments    = 6
+node_b_unique_fragments = 5
+```
+
+The exact duplicate does not create an additional balance effect.
+
+The justified relation is:
+
+`D(D(E)) = D(E)`
+
+This is exact-fragment deduplication.
+
+It is not complete payment replay or double-spend prevention.
+
+---
+
+## 7. Same-Evidence Equality
+
+Let:
+
+- `B` be an initial balance snapshot
+- `E` be a supported money-fragment collection
+- `D(E)` be exact-duplicate absorption
+- `F_v(B,E)` be the resolver snapshot under ruleset version `v`
+
+For two nodes:
+
+`B_i = B_j AND D(E_i) = D(E_j) -> F_v(B_i,E_i) = F_v(B_j,E_j)`
+
+This means nodes with the same initial balances, same deduplicated supported evidence, and same resolver rules produce the same bounded output.
+
+ORL-Money does not claim that nodes with permanently different evidence must produce the same result.
+
+---
+
+## 8. Arrival-Order Independence
+
+For a supported permutation `P(E)` of the same fragment content, the intended current-model invariant is:
+
+`F_v(B,P(E)) = F_v(B,E)`
+
+The current resolver classifies fragments from their content rather than their arrival position.
+
+A future stronger release should test this across an automated permutation corpus and cross-language conformance vectors.
+
+---
+
+## 9. Demonstrated Balance Preservation
+
+For each demonstrated resolved pair:
+
+`debit_amount = credit_amount = x`
+
+Therefore:
+
+`(-x) + (+x) = 0`
+
+Across all demonstrated resolved pairs:
+
+`sum(resolved_balance_effects) = 0`
+
+For the supplied scenarios:
+
+`sum(final_balances) = sum(initial_balances)`
+
+This is demonstrated net-balance conservation for matching debit-credit pairs.
+
+It is not a universal money-conservation theorem.
+
+---
+
+## 10. What to Check in the Two-Node Demo
+
+Run:
+
+```text
+python demo/orl_money_demo_reference.py
+```
+
+Confirm:
+
+```text
+all_nodes_equal            = True
+money_conserved            = True
+duplicate_safe             = True
+no_loss_forced             = True
+mismatch_contained         = True
+conflict_contained         = True
+total_money_initial        = 2000
+total_money_final          = 2000
+net_resolved_balance_delta = 0
+```
+
+Also confirm:
+
+```text
+state_summary = {'ABSTAIN': 2, 'INCOMPLETE': 2, 'RESOLVED': 1}
+```
+
+---
+
+## 11. What to Check in the Three-Node Demo
+
+Run:
+
+```text
+python demo/orl_money_demo_multinode.py
+```
+
+Confirm:
+
+```text
+round_2_match              = True
+money_conserved            = True
+total_money_initial        = 3000
+total_money_final          = 3000
+net_resolved_balance_delta = 0
+```
+
+Confirm the final state summary:
+
+```text
+R:3 I:0 A:2
+```
+
+---
+
+## 12. Repeatability Check
+
+Run each Python demonstration multiple times without modifying the source or scenario data.
+
+Expected observations:
+
+- identical transaction states
+- identical state summaries
+- identical balance effects
+- identical final demonstrated balances
+- identical node-equality results
+- identical total-balance checks
+
+This establishes repeatability for the unchanged supplied scenarios.
+
+It does not establish universal cross-platform or independent-implementation conformance.
+
+---
+
+## 13. Artifact Identity Check
+
+Follow:
+
+`verify/VERIFY.txt`
+
+Compare the committed files against:
+
+`verify/FREEZE_DEMO_SHA256.txt`
+
+The applicable relation is:
+
+`same bytes -> same SHA-256 hash`
+
+A matching hash proves artifact identity.
+
+It does not by itself prove:
+
+- expected behavioral output
+- complete conformance
+- cross-engine equality
+- financial correctness
+- security
+- production safety
+
+---
+
+## 14. Minimum Requirements
+
+For the Python demonstrations:
+
+- Python 3.9 or later
+- Python standard library
+- no external Python package required
+
+For the browser demonstration:
+
+- a modern browser
+- no server required
+- no live internet connection required after download
+
+The demos do not require GPS, NTP, a database, or a remote service to execute locally.
+
+---
+
+## 15. Repository Structure
+
+```text
+ORL-Money/
+├── README.md
+├── LICENSE
+├── demo/
+│   ├── orl_money_demo_reference.py
+│   ├── orl_money_demo_multinode.py
+│   └── orl_money_demo_v1.html
+├── docs/
+│   ├── FAQ.md
+│   ├── Quickstart.md
+│   ├── Test-Guide.md
+│   ├── Proof-Sketch.md
 │   └── ORL-Money-Structural-Overview.png
+└── verify/
+    ├── VERIFY.txt
+    └── FREEZE_DEMO_SHA256.txt
 ```
 
 ---
 
-## ⚡ Run the Reference Demo
+## 16. What the Current Demonstrations Establish
 
-```
-python demo/orl_money_demo_reference.py
-```
+For the committed scenarios, ORL-Money demonstrates:
 
-### Expected Behavior
+- different initial node views
+- deterministic output under unchanged supported inputs
+- same-evidence node equality
+- exact duplicate absorption
+- explicit incompleteness
+- abstention for the demonstrated amount mismatch
+- abstention for the demonstrated multiplicity conflict
+- no balance effect from demonstrated `INCOMPLETE` or `ABSTAIN` transactions
+- net-zero resolved balance effects for matching debit-credit pairs
+- no use of timestamps or fragment arrival position as classification authority
+- local execution without GPS, NTP, database access, or a live server after download
 
-• Nodes begin with different fragments  
-• Transactions remain unresolved initially  
-• No time is used for correctness  
-• No ordering is enforced  
-• Bounded sharing occurs  
-• Final results converge  
-
----
-
-## 🔁 Determinism Check
-
-Run multiple times:
-
-```
-python demo/orl_money_demo_reference.py
-```
-
-### Expected
-
-• identical balances  
-• identical transaction states  
-• identical convergence  
+These are bounded scenario claims.
 
 ---
 
-## 🔐 Deterministic Guarantee
+## 17. What ORL-Money Does Not Establish
 
-Final state depends only on:
+The current demonstrations do not implement or prove:
 
-**structural completeness + consistency**
+- authorization
+- identity or account ownership
+- available-funds verification
+- overdraft policy
+- account posting
+- payment execution
+- clearing or settlement
+- immutable finality
+- fraud prevention
+- cryptographic signatures
+- consensus
+- Byzantine fault tolerance
+- reliable broadcast
+- complete double-spend prevention
+- complete malformed-input validation
+- regulatory compliance
+- production readiness
+- universal financial correctness
+- universal order independence
+- safe operation on arbitrary or hostile input
 
-Not on:
-
-• execution order  
-• timing  
-• coordination  
-
----
-
-## 🔁 Cross-System Determinism
-
-Given identical structural input:
-
-`resolve(S) → identical output across all implementations`
-
-This ensures:
-
-• replay consistency  
-• independent system agreement  
-• deterministic auditability  
-
----
-
-## ⚡ Convergence Condition
-
-ORL-Money converges when:
-
-• sufficient structure is available  
-• structure is consistent  
-
-Otherwise:
-
-• **INCOMPLETE** remains unresolved  
-• **ABSTAIN** safely blocks conflicts  
+The current demonstrations should not be used to move real money.
 
 ---
 
-## ⚡ Key Demonstrations
+## 18. Current Input Limitations
 
-### 1. Fragmented Financial States
+The current implementations do not fully reject or define:
 
-Each node starts with:
+- negative amounts
+- zero amounts
+- malformed amount types
+- unsupported side values
+- unsafe identifiers
+- delimiter collisions
+- self-transfers
+- insufficient funds
+- unauthorized accounts
+- hostile input
 
-• partial transactions  
-• missing counterparts  
-• inconsistent visibility  
-
-### 2. Isolation
-
-Nodes operate:
-
-• independently  
-• without coordination  
-• without shared time  
-
-### 3. Bounded Sharing
-
-Information exchange is:
-
-• partial  
-• delayed  
-• limited  
-
-Yet convergence occurs.
-
-### 4. Conflict Handling
-
-Conflicting structures are:
-
-• detected  
-• isolated  
-• prevented from corrupting balances  
-
-State:
-
-**ABSTAIN**
+Use only the committed supported scenarios when verifying the current release.
 
 ---
 
-## 🔬 Resolution Model
+## 19. Cross-Language Limitations
 
-for each transaction:
+The Python and browser implementations are intended to express the same supplied two-node scenario.
 
-    if exactly one debit and one credit exist and amounts match:
-        state = RESOLVED
+Universal equivalence is not established.
 
-    elif debit or credit is missing:
-        state = INCOMPLETE
+Potential divergence areas include:
 
-    else:
-        state = ABSTAIN
+- Python integers versus JavaScript `Number`
+- delimiter-based keys
+- locale-sensitive sorting
+- malformed-value handling
+- implicit numeric conversion
+- identifier encoding
 
----
+A future conformance release should define:
 
-## 🔁 Convergence Guarantee
-
-From system properties:
-
-• monotonic structural completion  
-• conflict-safe abstention  
-• deterministic evaluation  
-
-It follows:
-
-ORL-Money converges to a **unique final financial truth**
-
-Independent of:
-
-• order  
-• time  
-• execution path  
+- formal schemas
+- canonical serialization
+- exact amount representation
+- byte-wise ordering
+- refusal rules
+- shared vectors
+- assertion-based Python and browser tests
 
 ---
 
-## 📌 What ORL-Money Proves
+## 20. Future Technical Direction
 
-• money correctness without time  
-• money correctness without ordering  
-• money correctness without synchronization  
-• deterministic convergence from structure alone  
+A stronger revision should add:
 
----
+- a formal supported-input schema
+- explicit invalid-input refusal
+- non-negative and domain-specific amount rules
+- exact cross-language amount representation
+- canonical serialization
+- delimiter-safe identifiers
+- deterministic byte-wise ordering
+- assertion-based expected outputs
+- permutation vectors
+- malformed-input vectors
+- adversarial conflict vectors
+- Python-browser conformance tests
+- versioned resolver receipts
+- independent reconstruction
+- a separately defined structural-closure layer
 
-## 🌍 Real-World Implications
+Future target relation:
 
-• offline payments  
-• rural banking  
-• disaster recovery systems  
-• cross-border reconciliation  
-• disconnected financial environments  
-• edge financial systems  
+`same validated initial balances + same validated canonical money fragments + same ruleset version -> same independently verified bounded financial snapshot`
 
----
-
-## 🧭 Adoption Path
-
-### Immediate
-
-• reconciliation engines  
-• audit systems  
-• offline sync layers  
-
-### Intermediate
-
-• banking back-office systems  
-• telecom billing reconciliation  
-
-### Advanced
-
-• core financial infrastructure  
-
----
-
-## 🧱 System Positioning
-
-ORL-Core   → structural ledger foundation  
-ORL-Money  → financial correctness proof  
-
----
-
-## ⚠️ What ORL-Money Does NOT Claim
-
-ORL-Money does not claim:
-
-• replacement of all financial systems  
-• elimination of communication  
-• performance superiority  
-
-It introduces a new correctness model.
-
----
-
-## 🔁 Structural Convergence Invariant
-
-```
-arrival_structure_A != arrival_structure_B  
-→ resolve(S_A) == resolve(S_B)
-```
-
-Provided both structures converge to the same structural set through bounded sharing.
+This stronger target is not part of the current demonstrations.
 
 ---
 
 ## ⭐ One-Line Summary
 
-ORL-Money demonstrates that independent financial systems starting with incomplete and conflicting fragments can converge deterministically to the same final financial truth — without relying on time, order, or synchronization.
+ORL-Money is a public deterministic reference model showing that nodes can begin with different supported money fragments and, after receiving the same deduplicated evidence under the same resolver rules and initial balances, produce the same bounded transaction states and demonstrated balance projection without using timestamps or fragment arrival order as classification authority, while leaving authorization, payment execution, settlement, consensus, finality, and production safety outside the current implementation.
