@@ -12,11 +12,12 @@
 ![Canonical Corpus](https://img.shields.io/badge/Canonical%20Corpus-Strict%20Verification%20PASS-green)
 ![Exact Money](https://img.shields.io/badge/Money-Exact%20Integer%20Strings-purple)
 ![Orderless Resolution](https://img.shields.io/badge/Arrival%20Order-Not%20Resolution%20Authority-lightgrey)
-![Open Use](https://img.shields.io/badge/Reference%20Implementation-Open%20Use-blue)
 
 [![Deterministic Verification](https://github.com/OMPSHUNYAYA/ORL-Money/actions/workflows/orl-money-verify.yml/badge.svg)](https://github.com/OMPSHUNYAYA/ORL-Money/actions/workflows/orl-money-verify.yml)
 
 **Validated financial observations become canonical claims. Canonical claims become witness-carrying transaction receipts. Resolved structure becomes an inspectable financial projection.**
+
+**🌐 Live Demo:** [Launch the ORL-Money Structural Lab](https://ompshunyaya.github.io/ORL-Money/demo/ORL_Money_Structural_Lab_v2_1_0.html)
 
 ORL-Money v2.1.0 is a deterministic reference architecture for bounded reconciliation of validated balance records, money claims, observation provenance, transaction structure, and structural projections.
 
