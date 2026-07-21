@@ -1,74 +1,93 @@
 # ⭐ ORL-Money
 
-**Deterministic Bounded Financial Reconciliation**
+## **Deterministic Bounded Financial Reconciliation**
 
 ![ORL-Money](https://img.shields.io/badge/ORL--Money-Bounded%20Financial%20Reconciliation-black)
-![Deterministic](https://img.shields.io/badge/Deterministic-Same--Evidence%20Resolution-green)
-![Deduplication](https://img.shields.io/badge/Exact%20Duplicates-Absorbed-purple)
-![No-Time-Authority](https://img.shields.io/badge/Timestamps-Not%20Resolution%20Authority-lightgrey)
-![Order-Independent](https://img.shields.io/badge/Arrival%20Order-Not%20Resolution%20Authority-lightgrey)
-![Abstention](https://img.shields.io/badge/Conflict-Demonstrated%20Abstention-orange)
-![Open-Use](https://img.shields.io/badge/Reference%20Implementation-Open%20Use-blue)
+![Version](https://img.shields.io/badge/Version-2.1.0-blue)
+![Python Audit](https://img.shields.io/badge/Python%20Audit-451%2F451%20PASS-green)
+![Browser Audit](https://img.shields.io/badge/Browser%20Audit-487%2F487%20PASS-green)
+![Parity](https://img.shields.io/badge/Python%20%2F%20Browser%20Parity-36%2F36%20PASS-green)
+![Independent Verifier](https://img.shields.io/badge/Independent%20Verifier-85%2F85%20PASS-green)
+![Frozen Corpus](https://img.shields.io/badge/Frozen%20Corpus-4%2F4%20PASS-green)
+![Canonical Corpus](https://img.shields.io/badge/Canonical%20Corpus-Strict%20Verification%20PASS-green)
+![Exact Money](https://img.shields.io/badge/Money-Exact%20Integer%20Strings-purple)
+![Orderless Resolution](https://img.shields.io/badge/Arrival%20Order-Not%20Resolution%20Authority-lightgrey)
+![Open Use](https://img.shields.io/badge/Reference%20Implementation-Open%20Use-blue)
 
-![ORL-Money Verify](https://github.com/OMPSHUNYAYA/ORL-Money/actions/workflows/orl-money-verify.yml/badge.svg)
+**Validated financial observations become canonical claims. Canonical claims become witness-carrying transaction receipts. Resolved structure becomes an inspectable financial projection.**
 
-**A public deterministic reference model for bounded reconciliation of supported money fragments.**
-
-ORL-Money extends ORL into a financial example domain.
-
-For the supplied scenarios, independent nodes can begin with different supported money fragments and, after receiving the same deduplicated fragment set, produce the same transaction states and demonstrated balance projection under the same resolver rules.
+ORL-Money v2.1.0 is a deterministic reference architecture for bounded reconciliation of validated balance records, money claims, observation provenance, transaction structure, and structural projections.
 
 The governing relation is:
 
-`same initial balances + same deduplicated supported money fragments + same resolver rules -> same bounded financial snapshot`
+`same validated balance basis + same canonical money claim set + same ruleset + same compatibility profile + same boundary declaration -> same bounded financial resolution`
 
 ORL-Money is developed within the Shunyaya Framework.
 
 ---
 
-## ⚡ Try It in 30 Seconds
+## ⚡ Try It
 
-Run the two-node reference demonstration:
+The commands below use forward-slash repository paths, which work naturally on Linux and macOS and are also accepted by Python on Windows. Linux and macOS systems may use `python3` instead of `python`, depending on the installation.
 
-```text
-python demo/orl_money_demo_reference.py
-```
-
-Run the three-node demonstration:
+Run the Python reference kernel:
 
 ```text
-python demo/orl_money_demo_multinode.py
+python demo/ORL_Money_Reference_Kernel_v2_1_0.py
 ```
 
-The demonstrations show:
+Run the full Python audit:
 
-- different initial node views
-- exact duplicate absorption
-- explicit `RESOLVED`, `INCOMPLETE`, and demonstrated `ABSTAIN` outcomes
-- scripted bounded fragment sharing
-- identical resolver snapshots after nodes receive the same evidence
-- balance effects produced only by `RESOLVED` transactions
-- preservation of the demonstrated total balance under matching debit-credit pairs
+```text
+python demo/ORL_Money_Reference_Kernel_v2_1_0.py --audit
+```
 
----
+Expected:
 
-## 🧾 Structural Lineage
+```text
+TOTAL 451/451 PASS
+```
 
-ORL-Money is a domain application of ORL.
+Open the browser laboratory:
 
-ORL provides the general bounded fragment-resolution pattern.
+[ORL-Money Structural Lab](demo/ORL_Money_Structural_Lab_v2_1_0.html)
 
-ORL-Money adds:
+Then run in the browser console:
 
-- initial balance snapshots
-- debit and credit fragments
-- resolved balance effects
-- demonstrated net-balance conservation
-- financial-domain examples and terminology
+```text
+await ORL_MONEY_AUDIT.runAll()
+```
 
-ORL-Money is a reference model and demonstration.
+Expected:
 
-It is not a banking core, payment rail, settlement system, or production financial platform.
+```text
+TOTAL 487/487 PASS
+```
+
+Run the independent verifier self-test:
+
+```text
+python verifier/ORL_Money_Independent_Verifier_v2_1_0.py --self-test
+```
+
+Expected:
+
+```text
+TOTAL 85/85 PASS
+```
+
+Verify the complete frozen corpus with strict canonical-byte checking:
+
+```text
+python verifier/ORL_Money_Independent_Verifier_v2_1_0.py --corpus corpus/ORL_Money_Frozen_Corpus_Manifest_v2_1_0.json --strict-canonical
+```
+
+Expected:
+
+```text
+Result  : PASS
+Summary : 4/4 PASS
+```
 
 ---
 
@@ -84,181 +103,398 @@ It is not a banking core, payment rail, settlement system, or production financi
 
 - [Quickstart](docs/Quickstart.md)
 - [FAQ](docs/FAQ.md)
-- [Test Guide](docs/Test-Guide.md)
-- [Model and Invariant Sketch](docs/Proof-Sketch.md)
+- [Core Architecture](docs/ORL_Money_Core_Architecture_v2_1_0.txt)
+- [Conformance](docs/ORL_Money_Conformance_v2_1_0.txt)
+- [Verification Guide](docs/ORL_Money_Verification_Guide_v2_1_0.txt)
+- [Console Audit Commands](docs/ORL_Money_v2_1_0_Console_Audit_Commands.txt)
+- [Frozen Corpus Verification Report](docs/ORL_Money_Frozen_Corpus_Verification_Report_v2_1_0.txt)
 - [Structural Overview](docs/ORL-Money-Structural-Overview.png)
 
-### ⚡ Demonstrations
+### ⚙️ Reference Implementations
 
-- [Python Reference Demo](demo/orl_money_demo_reference.py)
-- [Python Multi-Node Demo](demo/orl_money_demo_multinode.py)
-- [Browser Demo](demo/orl_money_demo_v1.html)
+- [Python Reference Kernel](demo/ORL_Money_Reference_Kernel_v2_1_0.py)
+- [Browser Structural Lab](demo/ORL_Money_Structural_Lab_v2_1_0.html)
 
-### 🔍 Verification
+### 🔍 Independent Verification
 
-- [Verification Instructions](verify/VERIFY.txt)
-- [Frozen Demo Hashes](verify/FREEZE_DEMO_SHA256.txt)
-
-### 📂 Repository Layout
-
-- [demo/](demo/) — reference, multi-node, and browser demonstrations
-- [docs/](docs/) — model, usage, testing, and visual documentation
-- [verify/](verify/) — artifact-identity and execution guidance
+- [Independent Python Verifier](verifier/ORL_Money_Independent_Verifier_v2_1_0.py)
+- [Frozen Corpus Manifest](corpus/ORL_Money_Frozen_Corpus_Manifest_v2_1_0.json)
+- [Two-Node Bundle](corpus/ORL_Money_two_node_bundle_v2_1_0.json)
+- [Three-Node Bundle](corpus/ORL_Money_three_node_bundle_v2_1_0.json)
+- [Declared-Balance Conflict Bundle](corpus/ORL_Money_balance_conflict_bundle_v2_1_0.json)
+- [Multi-Unit Bundle](corpus/ORL_Money_multi_unit_bundle_v2_1_0.json)
+- [SHA-256 Checksums](hashes/SHA256SUMS.txt)
 
 ---
 
-## 💡 Core Model
+## 🧩 Core Architecture
 
-ORL-Money classifies supported transaction fragments through deterministic resolver rules.
+ORL-Money separates concepts that are often collapsed into one financial result:
+
+`observation != financial claim`
+
+`transaction resolution != declared balance compatibility`
+
+`resolution != evidence-boundary closure`
+
+`financial reconciliation != authorization`
+
+`financial reconciliation != execution`
+
+`financial reconciliation != settlement`
+
+The reference processing path is:
+
+`raw balance records + raw observations`
+
+`-> validate collection shape`
+
+`-> validate records and Unicode scalar structure`
+
+`-> canonicalize`
+
+`-> identify claims and observations`
+
+`-> absorb exact observation duplicates`
+
+`-> resolve unique financial claims`
+
+`-> construct transaction receipts and witnesses`
+
+`-> construct account and unit projections`
+
+`-> evaluate declared-balance compatibility`
+
+`-> construct evidence-boundary receipt`
+
+`-> construct deterministic financial identities`
+
+`-> self-verify or independently reconstruct`
+
+The independent verification path is separate:
+
+`JSON bytes`
+
+`-> bounded intake`
+
+`-> UTF-8 validation`
+
+`-> duplicate-key-safe parsing`
+
+`-> optional exact canonical-byte check`
+
+`-> independent reconstruction`
+
+`-> deterministic comparison`
+
+---
+
+## 💰 Exact Money
+
+Money values use canonical decimal integer strings in:
+
+`amount_minor`
+
+Examples:
+
+```text
+"1"
+"250"
+"1000"
+```
+
+The Python reference kernel uses exact integers.
+
+The browser laboratory uses `BigInt`.
+
+The declared grammar refuses forms such as:
+
+```text
+01
++1
+-1
+1.0
+1e3
+```
+
+Transaction amount:
+
+```text
+0
+```
+
+is also refused.
+
+This keeps the reference financial amount path outside binary floating-point arithmetic.
+
+---
+
+## 🔤 Validation and Unicode Safety
+
+The declared balance and observation inputs must be arrays.
+
+Supported identifiers must:
+
+- be strings
+- be non-empty
+- have no leading or trailing whitespace
+- be NFC-normalized
+- remain within the declared length limit
+- contain no Unicode characters in categories `Cc`, `Cf`, or `Cs`
+
+The `Cs` exclusion means lone surrogate code points are deterministically refused before canonical hashing.
+
+Valid astral Unicode scalar values remain eligible when all other identifier rules are satisfied.
+
+The producer implementations also deterministically refuse non-array balance or observation collections instead of allowing those invalid shapes to reach array-processing logic.
+
+---
+
+## 🧾 Claim Identity and Observation Provenance
+
+A financial claim is identified from the canonical money fragment.
+
+An observation is identified from:
+
+- observation schema
+- observation reference
+- source
+- financial claim identity
+
+Therefore, multiple observations can refer to one financial claim.
+
+The core relation is:
+
+`observation multiplicity != financial multiplicity`
+
+The supplied two-node scenario contains:
+
+```text
+10 unique observations
+9 unique financial claims
+1 additional observation of an already observed financial claim
+```
+
+The resolver preserves observation provenance while resolving financial structure from the unique canonical claim set.
+
+---
+
+## 🧠 Deterministic Transaction Resolution
+
+For each transaction identifier, the current ruleset applies explicit deterministic precedence.
+
+Possible results include:
+
+### `RESOLVED`
+
+Exactly one debit claim and one credit claim are present with:
+
+- the same amount
+- the same unit
+
+Reason:
+
+`MATCHED_DEBIT_CREDIT_PAIR`
+
+### `INCOMPLETE`
+
+Required structure is missing.
+
+Examples:
+
+`MISSING_DEBIT_CLAIM`
+
+`MISSING_CREDIT_CLAIM`
+
+### `ABSTAIN`
+
+The supplied canonical claim structure conflicts with the rules.
+
+Examples:
+
+`MULTIPLE_DEBIT_AND_CREDIT_CLAIMS`
+
+`MULTIPLE_DEBIT_CLAIMS`
+
+`MULTIPLE_CREDIT_CLAIMS`
+
+`UNIT_MISMATCH`
+
+`AMOUNT_MISMATCH`
+
+The resolver does not invent missing claims and does not silently choose a winner from conflicting claims.
+
+Only `RESOLVED` transactions contribute to the structural projection.
+
+---
+
+## 🧾 Witness-Carrying Receipts
+
+Every transaction receipt carries:
+
+- transaction identifier
+- participating claim identities
+- transaction state
+- deterministic reason code
+- structural witness
+- projection contributions when resolved
+- transaction receipt identity
+
+A `RESOLVED` witness identifies the matching debit and credit claims.
+
+An `INCOMPLETE` witness identifies the present claims and missing requirement.
+
+An `ABSTAIN` witness identifies the conflicting claim structure or mismatch.
+
+This makes the result inspectable rather than returning only a status label.
+
+---
+
+## 🧮 Structural Projection
+
+For a resolved amount `x`:
+
+`debit contribution = -x`
+
+`credit contribution = +x`
+
+For each account-unit pair:
+
+`final_amount_minor = initial_amount_minor + sum(resolved contribution deltas)`
+
+Each account projection preserves the identities of the transaction receipts that contributed to its change.
+
+Unit projections aggregate account projections by unit.
+
+The current unit-local conservation condition is:
+
+`initial_total_minor = final_total_minor`
+
+and:
+
+`net_delta_minor = 0`
+
+---
+
+## ⚖️ Declared-Balance Compatibility
+
+ORL-Money keeps transaction resolution separate from declared-balance compatibility.
+
+The current compatibility rule is:
+
+`resolved_gross_outflow <= declared_initial_balance`
+
+Possible compatibility states are:
+
+`COMPATIBLE`
+
+`CONFLICT`
+
+`UNASSESSED`
+
+A transaction may be structurally:
+
+`RESOLVED`
+
+while the declared-balance compatibility result is:
+
+`CONFLICT`
+
+This is intentional.
+
+The dedicated balance-conflict scenario demonstrates two structurally resolved transactions whose combined gross outflow exceeds the declared initial balance basis.
+
+No arrival-order winner is selected.
+
+The key relation is:
+
+`transaction resolution != declared balance compatibility`
+
+This compatibility check is not a claim of actual available funds.
+
+---
+
+## 🔒 OPEN and SEALED Evidence Boundaries
+
+The current evidence-boundary states are:
+
+`OPEN`
+
+`SEALED`
+
+For `OPEN`, the current claim set is evaluated without being declared sealed.
+
+For `SEALED`, the current observed claim set is explicitly declared as the sealed claim set for that bounded evaluation.
+
+`SEALED` does not mean:
+
+- legal finality
+- settlement finality
+- immutable global completeness
+- proof that no evidence exists elsewhere
+
+It is a structural boundary declaration.
+
+---
+
+## 🔀 Merge Algebra
+
+ORL-Money tests more than simple list-order independence.
+
+The current audit suite exercises properties including:
+
+- commutativity
+- associativity
+- idempotence
+- permutation independence
+- partition independence
+- merge-tree independence
+- origin neutrality for financial resolution
+
+Current merge-algebra result:
+
+```text
+259/259 PASS
+```
+
+This supports the bounded design principle that equivalent canonical financial structure should not derive its resolution authority from the path by which observations were combined.
+
+---
+
+## 🧬 Financial Resolution Identity and Bundle Identity
+
+ORL-Money intentionally separates financial structure from observation provenance.
+
+The financial resolution identity commits to the bounded financial structure, including:
+
+- bundle profile and version
+- balance snapshot
+- canonical claim set
+- transaction receipt root
+- structural projection
+- declared-balance compatibility
+- evidence-boundary receipt
+- declared profiles
 
 Conceptually:
 
-`bounded_financial_snapshot = resolve(initial_balances, supported_money_fragments, resolver_rules)`
+`financial_resolution_id = H(financial structure)`
 
-For the current supplied model:
+The financial bundle identity additionally commits to observation provenance:
 
-`one debit + one credit + matching amount -> RESOLVED`
+`financial_bundle_id = H(financial_resolution_id + observation_set_id)`
 
-`missing counterpart -> INCOMPLETE`
+Therefore:
 
-`debit_credit_mismatch OR demonstrated_same_transaction_multiplicity_conflict -> ABSTAIN`
-
-Only `RESOLVED` transactions contribute to the demonstrated balance projection.
-
-`INCOMPLETE` and `ABSTAIN` transactions produce no demonstrated balance effect.
+`same canonical financial structure + different provenance -> same financial resolution identity may coexist with a different financial bundle identity`
 
 ---
 
-## 🧩 Current Supported Fragment Shape
+## 🧪 Four Reference Scenarios
 
-The committed demonstrations use entries with four fields:
+### Two-Node Reconciliation
 
-```text
-tx
-side
-account
-amount
-```
-
-Example:
-
-```text
-{"tx": "M100", "side": "debit", "account": "VillageA", "amount": 500}
-```
-
-The current demonstrations expect supported values shaped like the committed examples.
-
-A formal input schema and explicit invalid-input refusal are future hardening targets.
-
----
-
-## 🔁 Same-Evidence Resolution
-
-Let:
-
-- `B` be an initial balance snapshot
-- `E` be a supported money-fragment collection
-- `D(E)` be exact-duplicate absorption
-- `F_v(B,E)` be the financial resolver and projection under ruleset version `v`
-
-For two nodes using the same initial balances and resolver rules:
-
-`B_i = B_j AND D(E_i) = D(E_j) -> F_v(B_i,E_i) = F_v(B_j,E_j)`
-
-This means that nodes holding the same deduplicated supported evidence produce the same bounded output.
-
-ORL-Money does not claim that nodes with permanently different evidence must produce the same result.
-
----
-
-## 🔀 Arrival-Order Independence
-
-For a supported fragment collection `E`, a supported permutation `P(E)`, and a fixed resolver version `v`, the intended current-model invariant is:
-
-`F_v(B,P(E)) = F_v(B,E)`
-
-The resolver classifies the committed scenario from fragment content rather than fragment arrival position.
-
-A future stronger release should test this invariant across a declared permutation corpus and additional adversarial vectors.
-
----
-
-## ♻️ Exact Duplicate Absorption
-
-Exact duplicate fragments are absorbed before classification.
-
-`D(D(E)) = D(E)`
-
-For the committed examples:
-
-`F_v(B,E) = F_v(B,D(E))`
-
-This prevents an identical repeated fragment from being counted more than once in the demonstrated resolver model.
-
-This is exact-fragment deduplication.
-
-It is not a complete payment-duplication or double-spend prevention system.
-
----
-
-## 🧮 Demonstrated Balance Projection
-
-For each `RESOLVED` matching pair:
-
-`debit_amount = credit_amount`
-
-The resolver applies:
-
-`from_account_delta = -amount`
-
-`to_account_delta = +amount`
-
-Therefore, for each demonstrated resolved pair:
-
-`sum(resolved_balance_effects) = 0`
-
-For the supplied examples:
-
-`sum(final_balances) = sum(initial_balances)`
-
-This is demonstrated net-balance conservation for the committed matching-pair scenarios.
-
-It is not a universal money-conservation theorem or proof of financial-system correctness.
-
----
-
-## 🧭 Two-Node Reference Scenario
-
-Initial balances:
-
-```text
-VillageA = 1000
-VillageB = 1000
-```
-
-Node A begins with:
-
-```text
-M100 debit  VillageA 500
-M300 debit  VillageA 120
-M400 debit  VillageA 400
-M500 debit  VillageA 250
-```
-
-Node B begins with:
-
-```text
-M100 credit VillageB     500
-M100 credit VillageB     500
-M200 credit VillageB     300
-M400 credit VillageB     450
-M500 credit VillageB     250
-M500 credit VillageB_Alt 250
-```
-
-The repeated `M100` credit is an exact duplicate and is absorbed.
-
-After both nodes receive the same merged supported fragment set, the expected transaction states are:
+Expected transaction states:
 
 ```text
 M100 -> RESOLVED
@@ -268,53 +504,28 @@ M400 -> ABSTAIN
 M500 -> ABSTAIN
 ```
 
-Expected state summary:
+Expected summary:
 
 ```text
-RESOLVED  = 1
-INCOMPLETE = 2
-ABSTAIN   = 2
+R:1 I:2 A:2
 ```
 
-Expected resolved balance effects:
+Expected final projection:
 
 ```text
-VillageA = -500
-VillageB = +500
+VillageA|UNIT = 500
+VillageB|UNIT = 1500
 ```
 
-Expected final demonstrated balances:
+Reference identities:
 
 ```text
-VillageA = 500
-VillageB = 1500
+financial_resolution_a22b3ac1bea76f7f7573f539a8a2c76c257d149fc5b8a965fe17b0314f2154c0
+
+financial_bundle_675d2d0d6fd03e48c7839efcf7cf35b802ea6741aacdb0fd3682c3c599d27c38
 ```
 
-Expected node-equality result:
-
-```text
-all_nodes_equal = True
-```
-
----
-
-## 🌐 Three-Node Demonstration
-
-Run:
-
-```text
-python demo/orl_money_demo_multinode.py
-```
-
-The three nodes begin with different supported fragment sets and exchange them through two scripted sharing rounds.
-
-Expected final demonstrated balances:
-
-```text
-VillageA = 650
-VillageB = 1300
-VillageC = 1050
-```
+### Three-Node Reconstruction
 
 Expected final states:
 
@@ -326,202 +537,393 @@ M400 -> ABSTAIN
 M500 -> ABSTAIN
 ```
 
-Expected final state summary:
+Expected final projection:
 
 ```text
-RESOLVED = 3
-ABSTAIN  = 2
+VillageA|UNIT = 650
+VillageB|UNIT = 1300
+VillageC|UNIT = 1050
 ```
 
-Expected convergence check after round 2:
+Expected reconstruction progression:
 
 ```text
-round_2_match = True
+before_match = false
+round_1_match = false
+round_2_match = true
 ```
 
-The scripted exchange is a test mechanism.
+### Declared-Balance Conflict
 
-It is not a consensus, reliable-broadcast, networking, or settlement protocol.
+Expected transaction states:
+
+```text
+T1 -> RESOLVED
+T2 -> RESOLVED
+```
+
+Expected compatibility:
+
+```text
+CONFLICT
+```
+
+Expected declared deficit:
+
+```text
+40
+```
+
+No transaction winner is selected from arrival order.
+
+### Multi-Unit Isolation
+
+Expected final projection:
+
+```text
+A|USD = 800
+B|USD = 200
+A|EUR = 450
+C|EUR = 50
+```
+
+Expected conservation:
+
+```text
+USD = true
+EUR = true
+```
+
+Expected evidence boundary:
+
+```text
+SEALED
+```
 
 ---
 
-## ✅ What the Current Demonstrations Establish
+## 🔍 Verification Architecture
 
-For the supplied scenarios, ORL-Money demonstrates:
+ORL-Money v2.1.0 uses distinct verification layers.
 
-- deterministic output under unchanged supported inputs
-- same-evidence node equality
-- exact duplicate absorption
+### Python Reference Audit
+
+```text
+451/451 PASS
+```
+
+Audit profile:
+
+`ORL-MONEY-AUDIT-2-D03`
+
+### Browser Audit
+
+```text
+487/487 PASS
+```
+
+Audit profile:
+
+`ORL-MONEY-AUDIT-2-D04`
+
+The browser quick audit reports:
+
+```text
+143/143 PASS
+```
+
+### Python / Browser Reference Parity
+
+```text
+36/36 PASS
+```
+
+### Independent Verifier Self-Test
+
+```text
+85/85 PASS
+```
+
+Profile:
+
+`ORL-MONEY-INDEPENDENT-VERIFIER-SELF-TEST-1-D02`
+
+### Frozen Corpus
+
+```text
+4/4 PASS
+```
+
+Corpus verification profile:
+
+`ORL-MONEY-CORPUS-VERIFICATION-1-D01`
+
+The independent verifier reconstructs supplied bundles without importing the producer reference kernel.
+
+The canonical frozen corpus also passes exact canonical-byte verification.
+
+A successful independent reconstruction confirms agreement under the declared v2.1.0 reference contract.
+
+It does not prove the truth or authority of source observations.
+
+---
+
+## 🧊 Canonical Frozen Verification Corpus
+
+The frozen corpus provides four canonical reference bundles and a deterministic manifest.
+
+The corpus covers:
+
+- partial and conflicting transaction structure
+- observation multiplicity
+- three-node reconstruction
+- declared-balance conflict
+- multi-unit projection
+- OPEN and SEALED evidence boundaries
+
+The manifest records key structural identities for each scenario, including:
+
+- balance snapshot identity
+- claim set identity
+- observation set identity
+- transaction receipt root
+- projection root
+- compatibility receipt identity
+- boundary receipt identity
+- financial resolution identity
+- financial bundle identity
+- bundle SHA-256
+
+Current manifest ID:
+
+```text
+corpus_manifest_e549dcf1ff970db2ffd1422da39cfba328860f1afae55970229a051d9c80b05e
+```
+
+Verify the complete corpus with:
+
+```text
+python verifier/ORL_Money_Independent_Verifier_v2_1_0.py --corpus corpus/ORL_Money_Frozen_Corpus_Manifest_v2_1_0.json --strict-canonical
+```
+
+Expected:
+
+```text
+two-node         PASS
+three-node       PASS
+balance-conflict PASS
+multi-unit       PASS
+
+Summary: 4/4 PASS
+```
+
+---
+
+## 🛡 Independent Verifier Hardening
+
+The independent verifier has a separate public-input verification boundary.
+
+It includes:
+
+- independent reconstruction without importing the producer kernel
+- a stable machine-readable result shape
+- deterministic `failure_stage` and `reason_code`
+- UTF-8 validation
+- duplicate JSON key rejection
+- bounded input-file size
+- non-object and unsupported bundle-result refusal
+- optional exact canonical-byte checking
+- one-command corpus verification
+- path-safety checks for manifest bundle filenames
+- deterministic failure handling for declared public-input errors
+
+Representative failure stages include:
+
+```text
+READ
+DECODE
+PARSE
+CANONICALIZATION
+INTAKE
+RECONSTRUCTION
+COMPARE
+INTERNAL
+```
+
+Representative reason codes include:
+
+```text
+FILE_NOT_FOUND
+INVALID_UTF8
+INVALID_JSON
+DUPLICATE_JSON_KEY
+NON_CANONICAL_JSON_BYTES
+NON_OBJECT_ROOT
+UNSUPPORTED_BUNDLE_RESULT
+MISSING_INPUTS
+INCOMPLETE_INPUTS
+EMBEDDED_INPUTS_REFUSED
+BUNDLE_CONTENT_MISMATCH
+VERIFIED
+```
+
+Semantic verification and byte identity remain separate:
+
+`semantic reconstruction != exact canonical-byte identity`
+
+A valid JSON file with extra whitespace or a trailing newline may pass ordinary independent reconstruction while failing `--strict-canonical`.
+
+---
+
+## 🔐 Artifact Identity
+
+The repository uses:
+
+[SHA256SUMS](hashes/SHA256SUMS.txt)
+
+for the declared frozen implementation, verifier, and corpus artifact set.
+
+The checksum surface covers:
+
+- `demo/ORL_Money_Reference_Kernel_v2_1_0.py`
+- `demo/ORL_Money_Structural_Lab_v2_1_0.html`
+- `verifier/ORL_Money_Independent_Verifier_v2_1_0.py`
+- all five files in the declared `corpus/` set
+
+Documentation and presentation materials remain outside this declared frozen executable-and-corpus identity surface unless explicitly added later.
+
+The published `hashes/SHA256SUMS.txt` records the final byte identities of these eight declared frozen artifacts. If any file in this set changes, its checksum entry must be regenerated.
+
+The applicable relation is:
+
+`same bytes -> same SHA-256`
+
+A matching digest proves byte identity.
+
+It does not by itself prove behavioral correctness.
+
+---
+
+## ✅ What ORL-Money Establishes
+
+For the declared v2.1.0 reference contract, ORL-Money demonstrates:
+
+- strict supported-input validation
+- explicit non-array collection refusal
+- Unicode scalar-safe identifier validation
+- exact integer-string financial amounts
+- canonical deterministic identities
+- claim identity separated from observation provenance
+- exact observation duplicate absorption
+- deterministic transaction-resolution precedence
 - explicit incompleteness
-- abstention for the demonstrated amount mismatch
-- abstention for the demonstrated same-transaction multiplicity conflict
-- no balance effect from demonstrated `INCOMPLETE` or `ABSTAIN` transactions
-- net-zero resolved balance effects for matching debit-credit pairs
-- local execution without GPS, NTP, internet access, database access, or server dependency after download
-- no use of timestamps or fragment arrival position as transaction-classification authority
+- explicit abstention
+- witness-carrying transaction receipts
+- account and unit structural projections
+- transaction lineage within account projections
+- unit-local conservation checks
+- declared-balance compatibility
+- OPEN and SEALED evidence boundaries
+- merge-algebra invariants
+- deterministic financial resolution and bundle identities
+- Python and browser reference parity for the audited scenarios
+- independent reconstruction without producer import
+- stable verifier failure reporting
+- duplicate-key-safe JSON intake
+- exact canonical-byte verification
+- canonical four-scenario corpus verification
 
-These are bounded scenario claims.
-
-They are not universal guarantees for arbitrary financial data or architectures.
-
----
-
-## ⚖️ What ORL-Money Is
-
-ORL-Money is:
-
-- a bounded financial-fragment reconciliation reference model
-- a deterministic resolver demonstration
-- an ORL domain application
-- an educational and research artifact
-- a basis for later schema, conformance, and independent-verification work
+These are bounded reference-contract claims.
 
 ---
 
-## 🛡 What ORL-Money Is Not
+## 🛡 What ORL-Money Does Not Establish
 
-ORL-Money does not implement or prove:
+ORL-Money does not by itself establish:
 
+- source-data truth
+- account ownership
+- identity proof
 - authorization
-- identity or account ownership
-- available-funds verification
+- actual available funds
+- reservations or holds
 - overdraft policy
-- account posting
 - payment execution
-- clearing or settlement
-- finality
+- account posting
+- clearing
+- settlement
+- legal finality
 - fraud prevention
-- cryptographic signatures
+- complete double-spend prevention
 - consensus
 - Byzantine fault tolerance
 - reliable broadcast
-- complete double-spend prevention
-- complete malformed-input validation
 - regulatory compliance
-- production readiness
+- production security
 - universal financial correctness
-- universal order independence
-- safe operation on arbitrary or hostile input
 
-The current demonstrations should not be used to move real money.
-
----
-
-## 🔐 Verification Scope
-
-The repository provides two distinct verification activities.
-
-### Reference-Scenario Checking
-
-The Python and browser demonstrations can be checked against the documented expected:
-
-- transaction states
-- state summaries
-- balance effects
-- final demonstrated balances
-- same-evidence node equality
-
-### Artifact Identity
-
-The committed SHA-256 values identify the frozen demo files.
-
-`same bytes -> same SHA-256 hash`
-
-A successful hash comparison proves artifact identity.
-
-It does not by itself prove behavioral correctness, complete conformance, cross-engine equality, production safety, or universal financial correctness.
-
----
-
-## 🧩 Current Resolver Surface
-
-The reference implementations expose a small core:
-
-- `entry_key(entry)`
-- `deduplicate(entries)`
-- `resolve(entries)`
-- `bounded_union(node_entries, incoming_entries)`
-- `ledger_signature(balances, tx_state)`
-- `apply_effects(initial_balances, balance_effects)`
-
-The surface is intentionally compact so that the current model can be inspected and reproduced.
-
-Compactness does not replace validation, conformance testing, or production controls.
+The reference implementation should not be treated as a complete payment or banking system.
 
 ---
 
 ## 🔬 Research and Integration Direction
 
-ORL-Money may inform future work in:
+ORL-Money may inform work in:
 
-- reconciliation research
-- offline evidence synchronization
+- bounded financial reconciliation
+- provenance-preserving evidence exchange
 - deterministic audit reconstruction
 - disconnected-system comparison
-- back-office discrepancy classification
-- canonical financial-fragment exchange
-- independently verifiable resolver receipts
+- pre-execution structural checks
+- independently reconstructable financial receipts
+- multi-source claim reconciliation
+- deterministic discrepancy classification
+- canonical verification bundles
 
-Any real deployment would require additional authorization, identity, validation, security, accounting, networking, legal, operational, and regulatory layers.
+A downstream system may consume an ORL-Money financial bundle for separate:
 
----
+- policy
+- dependency checks
+- authorization
+- execution
+- posting
+- settlement
 
-## 🧭 Future Technical Direction
-
-A stronger revision should add:
-
-- a formal supported-input schema
-- explicit invalid-input refusal
-- non-negative and domain-specific amount rules
-- exact cross-language amount representation
-- canonical serialization
-- delimiter-safe identifiers
-- deterministic byte-wise ordering
-- assertion-based expected outputs
-- a permutation corpus
-- malformed-input vectors
-- adversarial conflict vectors
-- Python and browser conformance tests
-- versioned resolver receipts
-- independent reconstruction
-- a separately defined structural-closure layer
-
-Future target relation:
-
-`same validated initial balances + same validated canonical money fragments + same ruleset version -> same independently verified bounded financial snapshot`
-
-This stronger layer is not part of the current demonstrations.
+Those downstream authorities remain outside the ORL-Money v2.1.0 contract.
 
 ---
 
-## 📜 License
+# 📜 **License**
 
-See [LICENSE](LICENSE).
+See: [LICENSE](LICENSE)
 
-Reference implementation: **ORL Open Use License v1.0**
+The ORL-Money reference implementation and associated verification artifacts are free to use, copy, modify, test, study, and redistribute without a license fee, subject to the license terms stated in the repository.
 
-Unless otherwise stated, architecture descriptions, diagrams, and documentation: **CC BY-NC 4.0**
+Documentation, architecture materials, specifications, diagrams, and explanatory content are subject to the separate terms stated in the LICENSE.
+
+This repository does not claim recognition as a formal technical standard, security certification, production qualification, or third-party verification.
 
 ---
 
 ## 🔗 Related Structural References
 
 - [ORL](https://github.com/OMPSHUNYAYA/Orderless-Ledger)
-- [STOCRS](https://github.com/OMPSHUNYAYA/STOCRS)
-- [SSUM-Time](https://github.com/OMPSHUNYAYA/SSUM-Time)
+- [STINT-Money](https://github.com/OMPSHUNYAYA/STINT-Money)
 
 ---
 
 ## 🧭 Final Statement
 
-ORL-Money demonstrates a bounded structural alternative to using timestamps or fragment arrival order as financial-fragment classification authority.
+ORL-Money v2.1.0 demonstrates a bounded structural approach to financial reconciliation in which validated observations become canonical claims, claims become witness-carrying transaction receipts, resolved structure becomes an inspectable projection, declared-balance compatibility remains separate from transaction resolution, and provenance remains separate from financial multiplicity.
 
-For the supplied scenarios:
+The governing relation is:
 
-`same initial balances + same deduplicated supported money fragments + same resolver rules -> same bounded transaction states and balance projection`
+`same validated balance basis + same canonical money claim set + same ruleset + same compatibility profile + same boundary declaration -> same bounded financial resolution`
 
-Missing supported structure is not guessed.
+Missing structure is not guessed.
 
-Demonstrated conflicting structure is not forced.
+Conflicting structure is not forced.
 
-Only demonstrated `RESOLVED` transactions affect the balance projection.
+Arrival order is not silently promoted into transaction-classification authority.
+
+The resulting bounded financial structure can be independently reconstructed without importing the producer implementation, while strict canonical verification separately checks the exact bytes of the declared frozen corpus.
