@@ -1,0 +1,1132 @@
+ORL-Money Verification Guide v2.1.0
+
+Architecture Profile: ORL-MONEY-ARCH-2-D02
+Ruleset Profile: ORL-MONEY-RULES-2-D02
+Version: 2.1.0
+
+
+1. Purpose
+
+This guide defines the recommended verification procedure for ORL-Money v2.1.0.
+
+The verification model separates:
+
+`producer execution`
+
+`producer self-verification`
+
+`browser conformance and regression audit`
+
+`Python/browser declared-reference parity`
+
+`independent reconstruction`
+
+`canonical-byte verification`
+
+`frozen corpus verification`
+
+`artifact byte identity`
+
+A successful behavioral check does not by itself prove artifact identity.
+
+A matching SHA-256 hash does not by itself prove behavioral correctness.
+
+The activities serve different purposes.
+
+
+2. Expected Repository Paths
+
+Primary implementations:
+
+`demo/ORL_Money_Reference_Kernel_v2_1_0.py`
+
+`demo/ORL_Money_Structural_Lab_v2_1_0.html`
+
+Independent verifier:
+
+`verifier/ORL_Money_Independent_Verifier_v2_1_0.py`
+
+Frozen corpus:
+
+`corpus/ORL_Money_Frozen_Corpus_Manifest_v2_1_0.json`
+
+`corpus/ORL_Money_two_node_bundle_v2_1_0.json`
+
+`corpus/ORL_Money_three_node_bundle_v2_1_0.json`
+
+`corpus/ORL_Money_balance_conflict_bundle_v2_1_0.json`
+
+`corpus/ORL_Money_multi_unit_bundle_v2_1_0.json`
+
+Human-readable corpus result:
+
+`docs/ORL_Money_Frozen_Corpus_Verification_Report_v2_1_0.txt`
+
+Checksum file:
+
+`hashes/SHA256SUMS.txt`
+
+
+3. Requirements
+
+Python verification requires:
+
+- Python 3.9 or later
+- Python standard library only
+
+Browser verification requires:
+
+- a modern browser
+- no local server for the basic reference laboratory
+
+No external Python package is required by the reference kernel or independent verifier.
+
+
+Command Conventions
+
+Repository paths in this guide use forward slashes where practical because they work naturally on Linux and macOS and are also accepted by Python on Windows.
+
+Where a command shows:
+
+`python`
+
+Linux and macOS systems may use:
+
+`python3`
+
+depending on how Python is installed.
+
+Commands that create or remove temporary files are shown separately for Windows Command Prompt and POSIX shells where the syntax differs.
+
+
+4. Run the Python Reference Scenario
+
+From the repository root:
+
+`python demo/ORL_Money_Reference_Kernel_v2_1_0.py`
+
+Expected default scenario:
+
+`two-node`
+
+Expected result:
+
+`ACCEPTED`
+
+Expected state summary:
+
+`R:1 I:2 A:2`
+
+Expected final projection:
+
+`VillageA|UNIT = 500`
+
+`VillageB|UNIT = 1500`
+
+Expected declared-balance compatibility:
+
+`COMPATIBLE`
+
+Expected producer self-verification:
+
+`True`
+
+
+5. Run the Python Full Audit
+
+From the repository root:
+
+`python demo/ORL_Money_Reference_Kernel_v2_1_0.py --audit`
+
+Expected:
+
+`TOTAL 451/451 PASS`
+
+Expected groups:
+
+`VALIDATION 37/37 PASS`
+
+`CANONICALIZATION 15/15 PASS`
+
+`BALANCE BASIS 7/7 PASS`
+
+`CLAIM / OBSERVATION 13/13 PASS`
+
+`RESOLUTION 27/27 PASS`
+
+`EXACT MONEY 10/10 PASS`
+
+`MERGE ALGEBRA 259/259 PASS`
+
+`MULTI-UNIT 10/10 PASS`
+
+`BALANCE COMPATIBILITY 9/9 PASS`
+
+`PROJECTION 8/8 PASS`
+
+`BOUNDARY 7/7 PASS`
+
+`RECEIPTS / TAMPER 17/17 PASS`
+
+`REFERENCE SCENARIOS 20/20 PASS`
+
+`ORIGIN NEUTRALITY 2/2 PASS`
+
+`KNOWN REGRESSIONS 10/10 PASS`
+
+
+6. Run the Other Python Scenarios
+
+Three-node:
+
+`python demo/ORL_Money_Reference_Kernel_v2_1_0.py --scenario three-node`
+
+Declared-balance conflict:
+
+`python demo/ORL_Money_Reference_Kernel_v2_1_0.py --scenario balance-conflict`
+
+Multi-unit:
+
+`python demo/ORL_Money_Reference_Kernel_v2_1_0.py --scenario multi-unit`
+
+The boundary may also be explicitly selected:
+
+`python demo/ORL_Money_Reference_Kernel_v2_1_0.py --scenario two-node --boundary OPEN`
+
+`python demo/ORL_Money_Reference_Kernel_v2_1_0.py --scenario two-node --boundary SEALED`
+
+
+7. Generate JSON from the Python Kernel
+
+Display compact canonical JSON:
+
+`python demo/ORL_Money_Reference_Kernel_v2_1_0.py --scenario two-node --json`
+
+Redirected console output is valid JSON but normally includes the command-line print newline.
+
+For ordinary semantic verification:
+
+Windows Command Prompt:
+
+`python demo/ORL_Money_Reference_Kernel_v2_1_0.py --scenario two-node --json > "%TEMP%\ORL_Money_two_node_v2_1_0_test.json"`
+
+Linux / macOS:
+
+`TMP_FILE="$(mktemp "${TMPDIR:-/tmp}/orl-money-bundle.XXXXXX.json")"`
+
+`python3 demo/ORL_Money_Reference_Kernel_v2_1_0.py --scenario two-node --json > "$TMP_FILE"`
+
+The resulting temporary file is suitable for ordinary independent reconstruction.
+
+It is not expected to pass exact canonical-byte verification when the trailing newline is present.
+
+
+8. Create an Exact Canonical-Byte Test Bundle
+
+The distinction is:
+
+`semantic reconstruction != exact canonical-byte identity`
+
+Windows Command Prompt:
+
+Create an exact canonical-byte bundle:
+
+`python -c "import importlib.util,pathlib; p=r'demo/ORL_Money_Reference_Kernel_v2_1_0.py'; s=importlib.util.spec_from_file_location('orl',p); m=importlib.util.module_from_spec(s); s.loader.exec_module(m); b=m.scenario_bundle('two-node')[1]; pathlib.Path(r'%TEMP%\ORL_Money_two_node_v2_1_0_canonical.json').write_text(m.canonical_json(b),encoding='utf-8')"`
+
+Verify it:
+
+`python verifier/ORL_Money_Independent_Verifier_v2_1_0.py --bundle "%TEMP%\ORL_Money_two_node_v2_1_0_canonical.json" --strict-canonical`
+
+Delete the temporary file:
+
+`del "%TEMP%\ORL_Money_two_node_v2_1_0_canonical.json"`
+
+Linux / macOS:
+
+Create a temporary file:
+
+`TMP_FILE="$(mktemp "${TMPDIR:-/tmp}/orl-money-canonical.XXXXXX.json")"`
+
+Write the exact canonical JSON bytes:
+
+`TMP_FILE="$TMP_FILE" python3 -c "import importlib.util,os,pathlib; p='demo/ORL_Money_Reference_Kernel_v2_1_0.py'; s=importlib.util.spec_from_file_location('orl',p); m=importlib.util.module_from_spec(s); s.loader.exec_module(m); b=m.scenario_bundle('two-node')[1]; pathlib.Path(os.environ['TMP_FILE']).write_text(m.canonical_json(b),encoding='utf-8')"`
+
+Verify it:
+
+`python3 verifier/ORL_Money_Independent_Verifier_v2_1_0.py --bundle "$TMP_FILE" --strict-canonical`
+
+Delete the temporary file:
+
+`rm -f "$TMP_FILE"`
+
+Expected:
+
+`Result = PASS`
+
+`Reason code = VERIFIED`
+
+`Independent reconstruction = True`
+
+`Producer implementation imported = False`
+
+
+9. Run the Independent Verifier Self-Test
+
+From the repository root:
+
+`python verifier/ORL_Money_Independent_Verifier_v2_1_0.py --self-test`
+
+Linux and macOS systems may use:
+
+`python3 verifier/ORL_Money_Independent_Verifier_v2_1_0.py --self-test`
+
+Expected:
+
+`TOTAL 85/85 PASS`
+
+The self-test profile is:
+
+`ORL-MONEY-INDEPENDENT-VERIFIER-SELF-TEST-1-D02`
+
+
+10. Independently Verify a Bundle
+
+Windows Command Prompt:
+
+Create a temporary bundle:
+
+`python demo/ORL_Money_Reference_Kernel_v2_1_0.py --scenario two-node --json > "%TEMP%\ORL_Money_two_node_v2_1_0_test.json"`
+
+Run:
+
+`python verifier/ORL_Money_Independent_Verifier_v2_1_0.py --bundle "%TEMP%\ORL_Money_two_node_v2_1_0_test.json"`
+
+Delete the temporary file:
+
+`del "%TEMP%\ORL_Money_two_node_v2_1_0_test.json"`
+
+Linux / macOS:
+
+Create a temporary file and generate the bundle:
+
+`TMP_FILE="$(mktemp "${TMPDIR:-/tmp}/orl-money-bundle.XXXXXX.json")"`
+
+`python3 demo/ORL_Money_Reference_Kernel_v2_1_0.py --scenario two-node --json > "$TMP_FILE"`
+
+Run:
+
+`python3 verifier/ORL_Money_Independent_Verifier_v2_1_0.py --bundle "$TMP_FILE"`
+
+Delete the temporary file:
+
+`rm -f "$TMP_FILE"`
+
+Expected:
+
+`Result = PASS`
+
+`Failure stage = None`
+
+`Reason code = VERIFIED`
+
+`Independent reconstruction = True`
+
+`Producer implementation imported = False`
+
+Expected two-node identities:
+
+`financial_resolution_a22b3ac1bea76f7f7573f539a8a2c76c257d149fc5b8a965fe17b0314f2154c0`
+
+`financial_bundle_675d2d0d6fd03e48c7839efcf7cf35b802ea6741aacdb0fd3682c3c599d27c38`
+
+
+11. Independent Verification Meaning
+
+The independent verifier does not import:
+
+`demo/ORL_Money_Reference_Kernel_v2_1_0.py`
+
+It independently reconstructs the declared bundle structure from the bundle's embedded inputs.
+
+A PASS confirms agreement between:
+
+`supplied bundle`
+
+and:
+
+`independently reconstructed bundle`
+
+under the independent verifier's implementation of the declared v2.1.0 contract.
+
+This is stronger than trusting producer self-verification alone.
+
+It does not prove:
+
+- input truth
+- account ownership
+- authorization
+- legal validity
+- settlement
+- universal financial correctness
+- production security
+
+
+12. Verifier Failure Schema
+
+The normal bundle-verification result uses a stable field set for PASS and FAIL outcomes.
+
+The result includes:
+
+- profile
+- version
+- valid
+- status
+- errors
+- failure stage
+- reason code
+- independent reconstruction status
+- producer import status
+- producer self-verification presence and validity
+- supplied and reconstructed financial resolution identities
+- supplied and reconstructed financial bundle identities
+
+Representative deterministic failure stages are:
+
+`READ`
+
+`DECODE`
+
+`PARSE`
+
+`CANONICALIZATION`
+
+`INTAKE`
+
+`RECONSTRUCTION`
+
+`COMPARE`
+
+`INTERNAL`
+
+Representative reason codes include:
+
+`FILE_NOT_FOUND`
+
+`INVALID_UTF8`
+
+`INVALID_JSON`
+
+`DUPLICATE_JSON_KEY`
+
+`NON_CANONICAL_JSON_BYTES`
+
+`NON_OBJECT_ROOT`
+
+`UNSUPPORTED_BUNDLE_RESULT`
+
+`MISSING_INPUTS`
+
+`INCOMPLETE_INPUTS`
+
+`EMBEDDED_INPUTS_REFUSED`
+
+`BUNDLE_CONTENT_MISMATCH`
+
+`VERIFIED`
+
+
+13. Verify Duplicate-Key Rejection
+
+The verifier rejects duplicate JSON object keys during parsing.
+
+Windows Command Prompt:
+
+Create a temporary JSON document:
+
+`echo {"result":"ACCEPTED","result":"REFUSED"}>"%TEMP%\orl_money_duplicate.json"`
+
+Run:
+
+`python verifier/ORL_Money_Independent_Verifier_v2_1_0.py --bundle "%TEMP%\orl_money_duplicate.json"`
+
+Delete the temporary file:
+
+`del "%TEMP%\orl_money_duplicate.json"`
+
+Linux / macOS:
+
+Create a temporary file:
+
+`TMP_FILE="$(mktemp "${TMPDIR:-/tmp}/orl-money-duplicate.XXXXXX.json")"`
+
+Write the duplicate-key JSON exactly:
+
+`printf '%s' '{"result":"ACCEPTED","result":"REFUSED"}' > "$TMP_FILE"`
+
+Run:
+
+`python3 verifier/ORL_Money_Independent_Verifier_v2_1_0.py --bundle "$TMP_FILE"`
+
+Delete the temporary file:
+
+`rm -f "$TMP_FILE"`
+
+Expected:
+
+`Result = FAIL`
+
+`Failure stage = PARSE`
+
+`Reason code = DUPLICATE_JSON_KEY`
+
+
+14. Verify a Non-Bundle JSON Object
+
+Windows Command Prompt:
+
+Create:
+
+`echo {}>"%TEMP%\orl_money_wrong_file.json"`
+
+Run:
+
+`python verifier/ORL_Money_Independent_Verifier_v2_1_0.py --bundle "%TEMP%\orl_money_wrong_file.json"`
+
+Delete the temporary file:
+
+`del "%TEMP%\orl_money_wrong_file.json"`
+
+Linux / macOS:
+
+Create a temporary file:
+
+`TMP_FILE="$(mktemp "${TMPDIR:-/tmp}/orl-money-wrong-file.XXXXXX.json")"`
+
+Write the JSON object:
+
+`printf '%s' '{}' > "$TMP_FILE"`
+
+Run:
+
+`python3 verifier/ORL_Money_Independent_Verifier_v2_1_0.py --bundle "$TMP_FILE"`
+
+Delete the temporary file:
+
+`rm -f "$TMP_FILE"`
+
+Expected:
+
+`Result = FAIL`
+
+`Failure stage = INTAKE`
+
+`Reason code = UNSUPPORTED_BUNDLE_RESULT`
+
+The verifier should return a bounded failure result without an ordinary traceback.
+
+
+15. Machine-Readable Verification Output
+
+Add:
+
+`--json`
+
+Example using the frozen two-node bundle:
+
+Windows Command Prompt:
+
+`python verifier/ORL_Money_Independent_Verifier_v2_1_0.py --bundle corpus/ORL_Money_two_node_bundle_v2_1_0.json --json`
+
+Linux / macOS:
+
+`python3 verifier/ORL_Money_Independent_Verifier_v2_1_0.py --bundle corpus/ORL_Money_two_node_bundle_v2_1_0.json --json`
+
+The verifier emits one compact JSON verification result using the stable result field set.
+
+
+16. Verifier Intake Boundary
+
+The verifier reads JSON as UTF-8 and rejects duplicate object keys.
+
+The current maximum input file size is:
+
+`16 MiB`
+
+The verifier may report bounded failures for:
+
+- missing file
+- file read failure
+- input size above the declared limit
+- invalid UTF-8
+- duplicate JSON keys
+- invalid JSON
+- non-standard JSON constants
+- unsupported nesting
+- non-canonical JSON bytes when strict mode is enabled
+
+This boundary improves public-input behavior but does not claim complete hostile-input or denial-of-service resistance.
+
+
+17. Run the Browser Laboratory
+
+Open:
+
+`demo/ORL_Money_Structural_Lab_v2_1_0.html`
+
+The browser provides interactive scenarios for:
+
+- duplicate claim observations
+- provenance-origin changes
+- completion of missing transaction structure
+- amount mismatch
+- evidence-order shuffling
+- origin repartition
+- OPEN and SEALED boundary state
+- current-bundle verification
+- tamper rejection
+- transaction witnesses
+- account balance lineage
+- declared-balance compatibility
+- multi-unit projection
+
+
+18. Run the Browser Full Audit
+
+Open the browser developer console and run:
+
+`await ORL_MONEY_AUDIT.runAll()`
+
+Expected:
+
+`TOTAL 487/487 PASS`
+
+Expected groups:
+
+`VALIDATION 37/37 PASS`
+
+`CANONICALIZATION 15/15 PASS`
+
+`BALANCE BASIS 7/7 PASS`
+
+`CLAIM / OBSERVATION 13/13 PASS`
+
+`RESOLUTION 27/27 PASS`
+
+`EXACT MONEY 10/10 PASS`
+
+`MERGE ALGEBRA 259/259 PASS`
+
+`MULTI-UNIT 10/10 PASS`
+
+`BALANCE COMPATIBILITY 9/9 PASS`
+
+`PROJECTION 8/8 PASS`
+
+`BOUNDARY 7/7 PASS`
+
+`RECEIPTS / TAMPER 17/17 PASS`
+
+`REFERENCE SCENARIOS 20/20 PASS`
+
+`ORIGIN NEUTRALITY 2/2 PASS`
+
+`KNOWN REGRESSIONS 10/10 PASS`
+
+`PYTHON / BROWSER PARITY 36/36 PASS`
+
+
+19. Run the Browser Quick Audit
+
+Run:
+
+`ORL_MONEY_AUDIT.quick()`
+
+Expected:
+
+`passed = 143`
+
+`total = 143`
+
+`pass = true`
+
+The quick audit becomes the most recent audit result.
+
+Therefore, after running the quick audit:
+
+`ORL_MONEY_AUDIT.last()`
+
+will report the quick result rather than the earlier full-audit result.
+
+
+20. Verify Browser Version and Profiles
+
+Run:
+
+`ORLMoneyCore.VERSION`
+
+Expected:
+
+`2.1.0`
+
+Run:
+
+`ORLMoneyCore.profiles`
+
+Confirm the declared profile identifiers.
+
+
+21. Verify the Browser Two-Node Result
+
+Run:
+
+`ORLMoneyCore.transactionStateMap(ORLMoneyCore.scenarioBundle("two-node")[1])`
+
+Expected:
+
+`M100 = RESOLVED`
+
+`M200 = INCOMPLETE`
+
+`M300 = INCOMPLETE`
+
+`M400 = ABSTAIN`
+
+`M500 = ABSTAIN`
+
+Run:
+
+`ORLMoneyCore.finalBalanceMap(ORLMoneyCore.scenarioBundle("two-node")[1])`
+
+Expected:
+
+`VillageA|UNIT = 500`
+
+`VillageB|UNIT = 1500`
+
+Run:
+
+`ORLMoneyCore.verifyBundle(ORLMoneyCore.scenarioBundle("two-node")[1])`
+
+Expected:
+
+`valid = true`
+
+
+22. Verify the Three-Node Reconstruction
+
+Run:
+
+`ORLMoneyCore.simulateThreeNodeRounds(ORLMoneyCore.getScenario("three-node"))`
+
+Expected:
+
+`before_match = false`
+
+`round_1_match = false`
+
+`round_2_match = true`
+
+
+23. Verify the Declared-Balance Conflict Scenario
+
+Run:
+
+`ORLMoneyCore.transactionStateMap(ORLMoneyCore.scenarioBundle("balance-conflict")[1])`
+
+Expected:
+
+`T1 = RESOLVED`
+
+`T2 = RESOLVED`
+
+Inspect:
+
+`ORLMoneyCore.scenarioBundle("balance-conflict")[1].declared_balance_compatibility`
+
+Expected:
+
+`state = CONFLICT`
+
+This demonstrates:
+
+`transaction resolution != declared balance compatibility`
+
+The scenario does not select a transaction winner from arrival order.
+
+
+24. Verify Multi-Unit Isolation
+
+Run:
+
+`ORLMoneyCore.finalBalanceMap(ORLMoneyCore.scenarioBundle("multi-unit")[1])`
+
+Expected:
+
+`A|EUR = 450`
+
+`A|USD = 800`
+
+`B|USD = 200`
+
+`C|EUR = 50`
+
+Run:
+
+`ORLMoneyCore.unitConservationMap(ORLMoneyCore.scenarioBundle("multi-unit")[1])`
+
+Expected:
+
+`EUR = true`
+
+`USD = true`
+
+
+25. Verify Browser Unicode and Collection Intake
+
+Lone high surrogate:
+
+`ORLMoneyCore.resolveFinancialBundle([ORLMoneyCore.makeBalance("A"+String.fromCharCode(0xD800),"10","USD")],[],"OPEN",false)`
+
+Expected:
+
+`result = REFUSED`
+
+Lone low surrogate:
+
+`ORLMoneyCore.resolveFinancialBundle([ORLMoneyCore.makeBalance("A"+String.fromCharCode(0xDFFF),"10","USD")],[],"OPEN",false)`
+
+Expected:
+
+`result = REFUSED`
+
+Valid astral identifier:
+
+`ORLMoneyCore.validateFragmentRecord(ORLMoneyCore.makeFragment("T😀","debit","A","1","USD"))`
+
+Expected:
+
+`[]`
+
+Non-array balances:
+
+`ORLMoneyCore.resolveFinancialBundle({},[],"OPEN",false)`
+
+Expected:
+
+`result = REFUSED`
+
+Non-array observations:
+
+`ORLMoneyCore.resolveFinancialBundle([],{},"OPEN",false)`
+
+Expected:
+
+`result = REFUSED`
+
+
+26. Verify Browser Tamper Rejection
+
+Run:
+
+`(() => { const bundle = structuredClone(ORLMoneyCore.scenarioBundle("two-node")[1]); bundle.financial_bundle_id = "financial_bundle_tampered"; return ORLMoneyCore.verifyBundle(bundle); })()`
+
+Expected:
+
+`valid = false`
+
+
+27. Frozen Corpus Manifest
+
+The manifest is:
+
+`corpus/ORL_Money_Frozen_Corpus_Manifest_v2_1_0.json`
+
+It records for each scenario:
+
+- scenario name
+- filename
+- bundle SHA-256
+- result
+- boundary state
+- balance snapshot identity
+- claim set identity
+- observation set identity
+- transaction receipt root
+- projection root
+- compatibility receipt identity
+- boundary receipt identity
+- financial resolution identity
+- financial bundle identity
+- independent verification result
+
+The manifest ID is:
+
+`corpus_manifest_e549dcf1ff970db2ffd1422da39cfba328860f1afae55970229a051d9c80b05e`
+
+
+28. Verify the Entire Frozen Corpus
+
+Run:
+
+`python verifier/ORL_Money_Independent_Verifier_v2_1_0.py --corpus corpus/ORL_Money_Frozen_Corpus_Manifest_v2_1_0.json --strict-canonical`
+
+Linux and macOS systems may use:
+
+`python3 verifier/ORL_Money_Independent_Verifier_v2_1_0.py --corpus corpus/ORL_Money_Frozen_Corpus_Manifest_v2_1_0.json --strict-canonical`
+
+Expected:
+
+`Result = PASS`
+
+`Summary = 4/4 PASS`
+
+`Reason code = VERIFIED`
+
+Expected scenario results:
+
+`two-node = PASS`
+
+`three-node = PASS`
+
+`balance-conflict = PASS`
+
+`multi-unit = PASS`
+
+This one command verifies the manifest and declared corpus entries under the corpus verifier contract.
+
+
+29. Corpus Verification Meaning
+
+The corpus verifier checks, within its declared implementation:
+
+- manifest shape and declared profiles
+- manifest identity
+- scenario count
+- scenario-name uniqueness
+- filename uniqueness
+- safe single-file relative bundle names
+- recorded bundle SHA-256
+- exact canonical bytes when strict mode is enabled
+- independent reconstruction of every bundle
+- agreement with manifest-recorded structural identities
+
+The current corpus verification profile is:
+
+`ORL-MONEY-CORPUS-VERIFICATION-1-D01`
+
+The current result is:
+
+`4/4 PASS`
+
+
+30. Verifier Exit Codes
+
+The command-line verifier uses:
+
+`0 = verification or self-test PASS`
+
+`1 = verification, corpus, data, intake, or file-access FAIL`
+
+`2 = command-line usage error or missing mode`
+
+Missing files, unreadable files, invalid UTF-8, malformed JSON, duplicate JSON keys, canonicalization failures, and verification mismatches therefore return exit code `1`.
+
+Exit code `2` is reserved for command-line usage errors, such as invoking the verifier without selecting a supported verification mode.
+
+These exit codes support scripting and continuous verification workflows.
+
+
+31. Checksum Layout
+
+The repository uses one checksum file:
+
+`hashes/SHA256SUMS.txt`
+
+The declared frozen-artifact set includes:
+
+`demo/ORL_Money_Reference_Kernel_v2_1_0.py`
+
+`demo/ORL_Money_Structural_Lab_v2_1_0.html`
+
+`verifier/ORL_Money_Independent_Verifier_v2_1_0.py`
+
+`corpus/ORL_Money_Frozen_Corpus_Manifest_v2_1_0.json`
+
+`corpus/ORL_Money_two_node_bundle_v2_1_0.json`
+
+`corpus/ORL_Money_three_node_bundle_v2_1_0.json`
+
+`corpus/ORL_Money_balance_conflict_bundle_v2_1_0.json`
+
+`corpus/ORL_Money_multi_unit_bundle_v2_1_0.json`
+
+Documentation files remain outside this declared frozen executable-and-corpus checksum set unless the repository explicitly chooses to add them.
+
+The published checksum file records the final byte identities of these eight artifacts.
+
+If any file in this declared frozen set changes, its checksum entry must be regenerated.
+
+
+32. Verify or Regenerate SHA-256 Values
+
+The published values are recorded in:
+
+`hashes/SHA256SUMS.txt`
+
+Compute the eight artifact digests from the repository root and compare them with that file.
+
+Windows Command Prompt:
+
+`certutil -hashfile "demo\ORL_Money_Reference_Kernel_v2_1_0.py" SHA256`
+
+`certutil -hashfile "demo\ORL_Money_Structural_Lab_v2_1_0.html" SHA256`
+
+`certutil -hashfile "verifier\ORL_Money_Independent_Verifier_v2_1_0.py" SHA256`
+
+`certutil -hashfile "corpus\ORL_Money_Frozen_Corpus_Manifest_v2_1_0.json" SHA256`
+
+`certutil -hashfile "corpus\ORL_Money_two_node_bundle_v2_1_0.json" SHA256`
+
+`certutil -hashfile "corpus\ORL_Money_three_node_bundle_v2_1_0.json" SHA256`
+
+`certutil -hashfile "corpus\ORL_Money_balance_conflict_bundle_v2_1_0.json" SHA256`
+
+`certutil -hashfile "corpus\ORL_Money_multi_unit_bundle_v2_1_0.json" SHA256`
+
+Linux:
+
+`sha256sum demo/ORL_Money_Reference_Kernel_v2_1_0.py demo/ORL_Money_Structural_Lab_v2_1_0.html verifier/ORL_Money_Independent_Verifier_v2_1_0.py corpus/ORL_Money_Frozen_Corpus_Manifest_v2_1_0.json corpus/ORL_Money_two_node_bundle_v2_1_0.json corpus/ORL_Money_three_node_bundle_v2_1_0.json corpus/ORL_Money_balance_conflict_bundle_v2_1_0.json corpus/ORL_Money_multi_unit_bundle_v2_1_0.json`
+
+macOS:
+
+`shasum -a 256 demo/ORL_Money_Reference_Kernel_v2_1_0.py demo/ORL_Money_Structural_Lab_v2_1_0.html verifier/ORL_Money_Independent_Verifier_v2_1_0.py corpus/ORL_Money_Frozen_Corpus_Manifest_v2_1_0.json corpus/ORL_Money_two_node_bundle_v2_1_0.json corpus/ORL_Money_three_node_bundle_v2_1_0.json corpus/ORL_Money_balance_conflict_bundle_v2_1_0.json corpus/ORL_Money_multi_unit_bundle_v2_1_0.json`
+
+All eight computed values must match:
+
+`hashes/SHA256SUMS.txt`
+
+Only regenerate the checksum file after an intentional byte change to one or more files in the declared frozen-artifact set.
+
+
+33. Meaning of SHA-256 Verification
+
+A matching SHA-256 confirms:
+
+`local file bytes = frozen file bytes`
+
+under the compared digest value.
+
+It does not by itself establish:
+
+- correct behavioral output
+- independent reconstruction
+- valid source data
+- authorization
+- settlement
+- security
+- production readiness
+
+Behavioral verification and artifact identity verification remain separate.
+
+
+34. Pass Criteria
+
+The v2.1.0 reference verification procedure passes when all applicable checks succeed:
+
+Python reference kernel:
+
+`451/451 PASS`
+
+Browser laboratory:
+
+`487/487 PASS`
+
+Python/browser parity:
+
+`36/36 PASS`
+
+Browser quick audit:
+
+`143/143 PASS`
+
+Independent verifier self-test:
+
+`85/85 PASS`
+
+Frozen corpus:
+
+`4/4 PASS`
+
+Frozen corpus strict canonical verification:
+
+`PASS`
+
+Frozen artifact identity:
+
+`all computed hashes match hashes/SHA256SUMS.txt`
+
+
+35. Failure Conditions
+
+Treat verification as failed if any applicable condition occurs:
+
+- a reference implementation does not execute
+- a declared audit group fails
+- a reference scenario differs from its expected state
+- Python/browser declared-reference parity fails
+- the independent verifier reports FAIL for an expected valid bundle
+- supplied and reconstructed financial resolution identities differ
+- supplied and reconstructed financial bundle identities differ
+- a tampered bundle is incorrectly accepted
+- a declared corpus bundle hash differs from the manifest
+- strict canonical verification fails for the canonical frozen corpus
+- a frozen artifact hash differs from `hashes/SHA256SUMS.txt`
+
+A failed check indicates that further investigation is required.
+
+It does not by itself identify the cause.
+
+
+36. Claim Boundary
+
+The verification evidence establishes bounded deterministic behavior for the declared v2.1.0 reference contract and committed corpus.
+
+It does not establish:
+
+- universal financial correctness
+- truth of the underlying observations
+- account ownership
+- authorization
+- payment execution
+- clearing
+- settlement
+- legal finality
+- complete fraud prevention
+- complete double-spend prevention
+- consensus
+- reliable broadcast
+- production security
+- regulatory compliance
+
+
+37. Verification Summary
+
+The reference assurance chain is:
+
+`Python kernel -> producer self-verification`
+
+`Python audit -> 451/451 PASS`
+
+`Browser audit -> 487/487 PASS`
+
+`Python/browser parity -> 36/36 PASS`
+
+`Independent verifier self-test -> 85/85 PASS`
+
+`Independent bundle reconstruction -> PASS`
+
+`Frozen corpus -> 4/4 PASS with strict canonical verification`
+
+`hashes/SHA256SUMS.txt -> artifact byte identity`
+
+Together, these checks provide reproducible evidence for the declared ORL-Money v2.1.0 bounded reconciliation architecture while preserving a clear boundary between structural verification and real-world financial authority.

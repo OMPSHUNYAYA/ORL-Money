@@ -1,0 +1,871 @@
+ORL-Money Conformance v2.1.0
+
+Architecture Profile: ORL-MONEY-ARCH-2-D02
+Ruleset Profile: ORL-MONEY-RULES-2-D02
+Version: 2.1.0
+
+
+1. Purpose
+
+This document defines the declared conformance contract for ORL-Money v2.1.0.
+
+Conformance applies to the bounded reference model implemented by:
+
+`demo/ORL_Money_Reference_Kernel_v2_1_0.py`
+
+`demo/ORL_Money_Structural_Lab_v2_1_0.html`
+
+and independently reconstructed by:
+
+`verifier/ORL_Money_Independent_Verifier_v2_1_0.py`
+
+This document does not define banking, legal settlement, payment authorization, account ownership, fraud control, regulatory compliance, or production-system correctness.
+
+
+2. Conformance Profiles
+
+A conforming ORL-Money v2.1.0 implementation SHALL use these declared profile identities where applicable:
+
+Architecture:
+`ORL-MONEY-ARCH-2-D02`
+
+Ruleset:
+`ORL-MONEY-RULES-2-D02`
+
+Balance schema:
+`ORL-MONEY-BALANCE-2-D02`
+
+Fragment schema:
+`ORL-FRAGMENT-2-D02`
+
+Observation schema:
+`ORL-MONEY-OBSERVATION-2-D02`
+
+Transaction receipt:
+`ORL-MONEY-TX-RECEIPT-2-D02`
+
+Projection:
+`ORL-MONEY-PROJECTION-2-D02`
+
+Declared-balance compatibility:
+`ORL-MONEY-BALANCE-COMPAT-GROSS-1-D02`
+
+Boundary:
+`ORL-MONEY-BOUNDARY-1-D02`
+
+Bundle:
+`ORL-MONEY-BUNDLE-2-D02`
+
+Producer verification:
+`ORL-MONEY-VERIFICATION-1-D02`
+
+Independent verification:
+`ORL-MONEY-INDEPENDENT-VERIFICATION-1-D02`
+
+Independent verifier self-test:
+`ORL-MONEY-INDEPENDENT-VERIFIER-SELF-TEST-1-D02`
+
+Frozen corpus:
+`ORL-MONEY-FROZEN-CORPUS-1-D02`
+
+Frozen corpus manifest:
+`ORL-MONEY-FROZEN-CORPUS-MANIFEST-1-D02`
+
+Corpus verification:
+`ORL-MONEY-CORPUS-VERIFICATION-1-D01`
+
+
+3. Canonical JSON Requirement
+
+For deterministic identity generation, canonical JSON SHALL:
+
+- preserve Unicode
+- reject non-finite numeric values
+- sort object keys lexicographically
+- use compact separators with no insignificant whitespace
+- encode the resulting text as UTF-8 before SHA-256 hashing
+
+Identity SHALL be derived from a profile-bound value.
+
+Conceptually:
+
+`identity = prefix + "_" + SHA256(canonical_json({"profile": profile, "value": value}))`
+
+Exact canonical-byte verification is a separate verification mode.
+
+When `--strict-canonical` is used by the independent verifier, the supplied JSON bytes SHALL exactly equal the canonical UTF-8 serialization of the parsed JSON value.
+
+
+4. Identifier Conformance
+
+Supported identifiers SHALL:
+
+- be strings
+- be non-empty
+- have maximum length 128 Unicode characters
+- contain no leading or trailing whitespace
+- be NFC-normalized
+- contain no Unicode characters in categories `Cc`, `Cf`, or `Cs`
+
+The `Cs` exclusion means lone UTF-16 surrogate code points SHALL be refused.
+
+Valid Unicode scalar values outside the Basic Multilingual Plane MAY be accepted when all other identifier rules are satisfied.
+
+A record violating these rules SHALL be refused.
+
+
+5. Unit Conformance
+
+A supported unit SHALL match:
+
+`^[A-Z][A-Z0-9_-]{0,15}$`
+
+Examples of supported forms include:
+
+`UNIT`
+
+`USD`
+
+`EUR`
+
+`TOKEN_1`
+
+A record with an unsupported unit form SHALL be refused.
+
+
+6. Exact Money Conformance
+
+Amounts SHALL be represented as decimal integer strings.
+
+Balance amounts:
+
+- MAY be zero
+- SHALL contain no sign
+- SHALL contain no leading zero unless the amount is exactly `0`
+- SHALL contain at most 78 digits
+
+Transaction claim amounts:
+
+- SHALL be strictly positive
+- SHALL contain no sign
+- SHALL contain no leading zero
+- SHALL contain at most 78 digits
+
+Examples that SHALL be refused include:
+
+`01`
+
+`+1`
+
+`-1`
+
+`1.0`
+
+`1e3`
+
+A transaction amount of:
+
+`0`
+
+SHALL be refused.
+
+
+7. Top-Level Collection Conformance
+
+The balance input SHALL be an array.
+
+The observation input SHALL be an array.
+
+A non-array balance input SHALL be refused.
+
+A non-array observation input SHALL be refused.
+
+The reference implementations SHALL return a deterministic refusal rather than raising an uncaught error for these declared intake failures.
+
+
+8. Balance Record Conformance
+
+A balance record SHALL contain exactly:
+
+`schema`
+
+`account`
+
+`amount_minor`
+
+`unit`
+
+The schema SHALL equal:
+
+`ORL-MONEY-BALANCE-2-D02`
+
+Missing or additional fields SHALL cause refusal.
+
+
+9. Fragment Conformance
+
+A money fragment SHALL contain exactly:
+
+`schema`
+
+`tx`
+
+`side`
+
+`account`
+
+`amount_minor`
+
+`unit`
+
+The schema SHALL equal:
+
+`ORL-FRAGMENT-2-D02`
+
+`side` SHALL be:
+
+`debit`
+
+or:
+
+`credit`
+
+Missing or additional fields SHALL cause refusal.
+
+
+10. Observation Conformance
+
+An observation SHALL contain exactly:
+
+`schema`
+
+`observation_ref`
+
+`source`
+
+`fragment`
+
+The schema SHALL equal:
+
+`ORL-MONEY-OBSERVATION-2-D02`
+
+The nested fragment SHALL conform to the fragment contract.
+
+Missing or additional fields SHALL cause refusal.
+
+
+11. Balance-Basis Conformance
+
+Exact duplicate balance records SHALL be absorbed by deterministic record identity.
+
+Balance records SHALL then be grouped by:
+
+`(account, unit)`
+
+If exactly one distinct amount remains for an account-unit pair, the pair SHALL contribute to the resolved balance basis.
+
+If multiple distinct amounts remain for the same account-unit pair:
+
+`balance_basis.state = CONFLICT`
+
+A balance-basis conflict SHALL NOT be silently resolved by:
+
+- arrival order
+- input position
+- first-write preference
+- last-write preference
+
+When the balance basis is conflicting:
+
+`structural_projection.state = UNAVAILABLE`
+
+with:
+
+`reason_code = BALANCE_BASIS_CONFLICT`
+
+
+12. Observation and Claim Conformance
+
+An observation identity SHALL commit to:
+
+- observation schema
+- observation reference
+- source
+- financial claim identity
+
+A financial claim identity SHALL commit to the canonical fragment.
+
+Exact duplicate observations SHALL be absorbed.
+
+Distinct observations of the same claim SHALL remain visible as separate provenance observations.
+
+Transaction resolution SHALL operate over unique financial claims.
+
+The required relation is:
+
+`observation multiplicity != financial multiplicity`
+
+
+13. Transaction Resolution Precedence
+
+For each transaction identifier, the resolver SHALL apply the following precedence:
+
+1. Multiple debit claims and multiple credit claims:
+
+`ABSTAIN / MULTIPLE_DEBIT_AND_CREDIT_CLAIMS`
+
+2. Multiple debit claims:
+
+`ABSTAIN / MULTIPLE_DEBIT_CLAIMS`
+
+3. Multiple credit claims:
+
+`ABSTAIN / MULTIPLE_CREDIT_CLAIMS`
+
+4. Missing debit claim:
+
+`INCOMPLETE / MISSING_DEBIT_CLAIM`
+
+5. Missing credit claim:
+
+`INCOMPLETE / MISSING_CREDIT_CLAIM`
+
+6. Unit mismatch:
+
+`ABSTAIN / UNIT_MISMATCH`
+
+7. Amount mismatch:
+
+`ABSTAIN / AMOUNT_MISMATCH`
+
+8. One debit claim and one credit claim with matching unit and amount:
+
+`RESOLVED / MATCHED_DEBIT_CREDIT_PAIR`
+
+A conforming implementation SHALL NOT use claim arrival position as precedence authority.
+
+
+14. Transaction Receipt Conformance
+
+Every transaction receipt SHALL contain:
+
+- profile
+- ruleset profile
+- transaction identifier
+- transaction evidence identity
+- sorted claim identities
+- state
+- reason code
+- witness
+- contributions
+- transaction receipt identity
+
+Only `RESOLVED` receipts SHALL contain non-empty structural projection contributions.
+
+
+15. Projection Conformance
+
+For every resolved transaction amount `x`:
+
+`debit contribution = -x`
+
+`credit contribution = +x`
+
+For every account-unit pair:
+
+`final_amount_minor = initial_amount_minor + sum(resolved contribution deltas)`
+
+An account projection SHALL carry the contributing transaction receipt identities.
+
+Unit projection SHALL aggregate account projections by unit.
+
+The current conservation condition SHALL be evaluated as:
+
+`conservation_ok = (initial_total_minor = final_total_minor) AND (net_delta_minor = 0)`
+
+
+16. Declared-Balance Compatibility Conformance
+
+The compatibility profile SHALL be:
+
+`ORL-MONEY-BALANCE-COMPAT-GROSS-1-D02`
+
+The current rule SHALL be:
+
+`resolved_gross_outflow <= declared_initial_balance`
+
+For each account-unit pair with resolved debit-side claims:
+
+`COMPATIBLE`
+
+SHALL mean resolved gross outflow is less than or equal to the declared initial balance basis.
+
+`CONFLICT`
+
+SHALL mean resolved gross outflow exceeds the declared initial balance basis.
+
+`UNASSESSED`
+
+SHALL mean no declared balance basis exists for the account-unit pair.
+
+The compatibility state SHALL remain separate from transaction resolution.
+
+A conforming implementation SHALL permit:
+
+`transaction_state = RESOLVED`
+
+and:
+
+`declared_balance_compatibility = CONFLICT`
+
+to coexist.
+
+A compatibility conflict SHALL NOT select a transaction winner from arrival order.
+
+
+17. Boundary Conformance
+
+Supported evidence-boundary states are:
+
+`OPEN`
+
+`SEALED`
+
+Any other boundary state SHALL be refused.
+
+For `OPEN`:
+
+`declared_sealed_claim_set_id = null`
+
+For `SEALED`:
+
+`declared_sealed_claim_set_id = observed_claim_set_id`
+
+A SEALED boundary SHALL NOT be represented as legal settlement finality or universal completeness.
+
+
+18. Financial Resolution Identity Conformance
+
+The financial resolution identity SHALL commit to:
+
+- bundle profile
+- version
+- architecture profile
+- ruleset profile
+- compatibility profile
+- balance snapshot identity
+- claim set identity
+- transaction receipt root
+- projection root
+- compatibility receipt identity
+- boundary receipt identity
+
+The financial resolution identity SHALL NOT depend on observation provenance when the canonical financial claim set and all other resolution inputs remain unchanged.
+
+
+19. Financial Bundle Identity Conformance
+
+The financial bundle identity SHALL commit to:
+
+- bundle profile
+- financial resolution identity
+- observation set identity
+
+Therefore:
+
+`same financial resolution + same observation set -> same financial bundle identity`
+
+A provenance change MAY produce:
+
+`same financial resolution identity`
+
+with:
+
+`different financial bundle identity`
+
+
+20. Refusal Conformance
+
+Malformed supported input SHALL return a deterministic refusal object rather than a partially accepted financial bundle.
+
+A refusal SHALL use:
+
+`profile = ORL-MONEY-BUNDLE-2-D02`
+
+`result = REFUSED`
+
+and SHALL carry a deterministic refusal identity.
+
+Refusal conditions include declared validation failures, unsupported top-level collection shapes, lone surrogate identifiers, and unsupported boundary state.
+
+
+21. Producer Verification Conformance
+
+A producer self-verifier SHALL reconstruct an accepted bundle from its embedded inputs and compare the reconstructed structure against the supplied structure.
+
+The reference producer verification profile is:
+
+`ORL-MONEY-VERIFICATION-1-D02`
+
+A changed financial or provenance structure that alters the reconstructed bundle SHALL be detected.
+
+
+22. Independent Verification Conformance
+
+The independent reference verifier:
+
+`verifier/ORL_Money_Independent_Verifier_v2_1_0.py`
+
+SHALL NOT import the producer reference kernel.
+
+It reconstructs the bundle from embedded inputs using its own implementation of the declared contract.
+
+The independent verification profile is:
+
+`ORL-MONEY-INDEPENDENT-VERIFICATION-1-D02`
+
+A PASS requires the supplied bundle and independently reconstructed bundle to agree under the verifier's declared comparison contract.
+
+Every normal bundle-verification result SHALL use one stable machine-readable result shape containing:
+
+- profile
+- version
+- valid
+- status
+- errors
+- failure_stage
+- reason_code
+- independent_reconstruction
+- producer_import_used
+- producer_self_verification_present
+- producer_self_verification_valid
+- supplied financial resolution identity
+- reconstructed financial resolution identity
+- supplied financial bundle identity
+- reconstructed financial bundle identity
+
+The verifier SHALL report declared input failures without an uncaught traceback.
+
+The current verifier recognizes deterministic failure stages including:
+
+`READ`
+
+`DECODE`
+
+`PARSE`
+
+`CANONICALIZATION`
+
+`INTAKE`
+
+`RECONSTRUCTION`
+
+`COMPARE`
+
+`INTERNAL`
+
+Representative reason codes include:
+
+`FILE_NOT_FOUND`
+
+`INVALID_UTF8`
+
+`INVALID_JSON`
+
+`DUPLICATE_JSON_KEY`
+
+`NON_CANONICAL_JSON_BYTES`
+
+`NON_OBJECT_ROOT`
+
+`UNSUPPORTED_BUNDLE_RESULT`
+
+`MISSING_INPUTS`
+
+`INCOMPLETE_INPUTS`
+
+`EMBEDDED_INPUTS_REFUSED`
+
+`BUNDLE_CONTENT_MISMATCH`
+
+`VERIFIED`
+
+
+23. JSON Intake Conformance for the Independent Verifier
+
+The independent verifier SHALL:
+
+- read JSON as UTF-8
+- refuse invalid UTF-8
+- refuse duplicate JSON object keys
+- refuse non-standard JSON constants
+- refuse JSON input exceeding the declared 16 MiB file-size limit
+- refuse unsupported nesting when the parser cannot safely process it
+- optionally require exact canonical JSON bytes with `--strict-canonical`
+
+Duplicate-key refusal applies recursively through JSON object parsing.
+
+The verifier's intake hardening does not establish complete resistance to every possible hostile resource-exhaustion strategy.
+
+
+24. Frozen Corpus Conformance
+
+The frozen corpus SHALL contain:
+
+`ORL_Money_Frozen_Corpus_Manifest_v2_1_0.json`
+
+`ORL_Money_two_node_bundle_v2_1_0.json`
+
+`ORL_Money_three_node_bundle_v2_1_0.json`
+
+`ORL_Money_balance_conflict_bundle_v2_1_0.json`
+
+`ORL_Money_multi_unit_bundle_v2_1_0.json`
+
+The corpus manifest SHALL use:
+
+`ORL-MONEY-FROZEN-CORPUS-MANIFEST-1-D02`
+
+The corpus SHALL use:
+
+`ORL-MONEY-FROZEN-CORPUS-1-D02`
+
+The current corpus SHALL contain exactly four declared scenarios.
+
+The corpus verifier SHALL verify, within its declared contract:
+
+- manifest profile identities
+- manifest identity
+- scenario count
+- scenario-name uniqueness
+- filename uniqueness
+- safe single-file relative names
+- bundle SHA-256 values
+- bundle canonical bytes when `--strict-canonical` is requested
+- independent reconstruction
+- declared structural identities recorded by the manifest
+
+
+25. Two-Node Reference Vector
+
+The two-node frozen bundle SHALL resolve:
+
+`M100 -> RESOLVED`
+
+`M200 -> INCOMPLETE`
+
+`M300 -> INCOMPLETE`
+
+`M400 -> ABSTAIN`
+
+`M500 -> ABSTAIN`
+
+State summary:
+
+`R:1 I:2 A:2`
+
+Final projection:
+
+`VillageA|UNIT = 500`
+
+`VillageB|UNIT = 1500`
+
+Declared-balance compatibility:
+
+`COMPATIBLE`
+
+Financial resolution identity:
+
+`financial_resolution_a22b3ac1bea76f7f7573f539a8a2c76c257d149fc5b8a965fe17b0314f2154c0`
+
+Financial bundle identity:
+
+`financial_bundle_675d2d0d6fd03e48c7839efcf7cf35b802ea6741aacdb0fd3682c3c599d27c38`
+
+Independent reconstruction:
+
+`PASS`
+
+
+26. Three-Node Reference Vector
+
+The three-node frozen bundle SHALL resolve:
+
+`M100 -> RESOLVED`
+
+`M200 -> RESOLVED`
+
+`M300 -> RESOLVED`
+
+`M400 -> ABSTAIN`
+
+`M500 -> ABSTAIN`
+
+Final projection:
+
+`VillageA|UNIT = 650`
+
+`VillageB|UNIT = 1300`
+
+`VillageC|UNIT = 1050`
+
+The reference reconstruction progression SHALL be:
+
+`before_match = false`
+
+`round_1_match = false`
+
+`round_2_match = true`
+
+Financial resolution identity:
+
+`financial_resolution_eff3518564740a56633fe54188412bed95fa6730806d1c9a417f7e9edce48750`
+
+Financial bundle identity:
+
+`financial_bundle_cecf58e08d1094ca544933bb41224f0b62eb45361d2cab3cc51db724453da5a7`
+
+Independent reconstruction:
+
+`PASS`
+
+
+27. Declared-Balance Conflict Reference Vector
+
+The balance-conflict frozen bundle SHALL resolve:
+
+`T1 -> RESOLVED`
+
+`T2 -> RESOLVED`
+
+The declared-balance compatibility state SHALL be:
+
+`CONFLICT`
+
+The declared deficit SHALL be:
+
+`40`
+
+No order-based winner SHALL be selected.
+
+Financial resolution identity:
+
+`financial_resolution_953a07db0963a353a6f842d9e27ec1ebe8179f5c62dc575a7469dcec006ff563`
+
+Financial bundle identity:
+
+`financial_bundle_e417834eda2b546169ecba938edd341c189211dc57a4191ab5f2a19f1ae8a797`
+
+Independent reconstruction:
+
+`PASS`
+
+
+28. Multi-Unit Reference Vector
+
+The multi-unit frozen bundle SHALL project:
+
+`A|USD = 800`
+
+`B|USD = 200`
+
+`A|EUR = 450`
+
+`C|EUR = 50`
+
+Unit conservation SHALL report:
+
+`USD = true`
+
+`EUR = true`
+
+Boundary state SHALL be:
+
+`SEALED`
+
+Financial resolution identity:
+
+`financial_resolution_1044b8ce1f2c1c96883421e663bb9a4712d9d836a2a89225d4695f9119efd86e`
+
+Financial bundle identity:
+
+`financial_bundle_a3a4ebc088c10eeef2bae5d82284e837038f8810fef1e682f24a91a398f99de8`
+
+Independent reconstruction:
+
+`PASS`
+
+
+29. Reference Audit Evidence
+
+The Python reference kernel reports:
+
+`TOTAL 451/451 PASS`
+
+under:
+
+`ORL-MONEY-AUDIT-2-D03`
+
+The browser laboratory reports:
+
+`TOTAL 487/487 PASS`
+
+under:
+
+`ORL-MONEY-AUDIT-2-D04`
+
+The browser audit includes:
+
+`PYTHON / BROWSER PARITY 36/36 PASS`
+
+The browser quick audit reports:
+
+`143/143 PASS`
+
+The independent verifier self-test reports:
+
+`TOTAL 85/85 PASS`
+
+under:
+
+`ORL-MONEY-INDEPENDENT-VERIFIER-SELF-TEST-1-D02`
+
+The frozen corpus reports:
+
+`4/4 PASS`
+
+under:
+
+`ORL-MONEY-CORPUS-VERIFICATION-1-D01`
+
+with exact canonical-byte verification enabled.
+
+These results establish the declared reference behavior for the tested implementations and frozen corpus.
+
+They do not establish universal financial correctness, complete security, or production readiness.
+
+
+30. Current Cross-Implementation Claim Boundary
+
+The strongest justified current cross-implementation statement is:
+
+`the Python reference kernel and browser laboratory reproduce the declared v2.1.0 reference identities for the audited scenarios, and the independent Python verifier reconstructs the canonical four-scenario corpus without importing the producer kernel`
+
+The current evidence does not prove universal equivalence for every possible input accepted by the declared grammar.
+
+
+31. Conformance Result
+
+An implementation conforms to the declared ORL-Money v2.1.0 reference contract only to the extent that it:
+
+- follows the declared validation and canonicalization rules
+- rejects invalid Unicode scalar structure as declared
+- reproduces the declared transaction-resolution precedence
+- preserves claim and observation separation
+- reproduces projection and compatibility semantics
+- preserves boundary semantics
+- reproduces deterministic identity construction
+- passes the applicable frozen corpus checks
+- does not exceed the stated claim boundary
+
+Conformance to this reference contract is not a certification of a production financial system.

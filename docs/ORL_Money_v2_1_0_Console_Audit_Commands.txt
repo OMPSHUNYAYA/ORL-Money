@@ -1,0 +1,887 @@
+ORL-Money v2.1.0 Console Audit Commands
+
+Browser Audit Profile: ORL-MONEY-AUDIT-2-D04
+Python Audit Profile: ORL-MONEY-AUDIT-2-D03
+Version: 2.1.0
+
+
+Command Conventions
+
+Repository paths in this document use forward slashes where practical because they work naturally on Linux and macOS and are also accepted by Python on Windows.
+
+Where a command shows:
+
+python
+
+Linux and macOS systems may use:
+
+python3
+
+depending on how Python is installed.
+
+Commands that create or remove temporary files are shown separately for Windows Command Prompt and POSIX shells where the syntax differs.
+
+
+1. Open the Browser Console
+
+Open:
+
+demo/ORL_Money_Structural_Lab_v2_1_0.html
+
+Then open the browser developer tools and select the Console tab.
+
+A Chromium `file://` unique-security-origin warning may appear when the local HTML file is opened directly.
+
+The current reference audits execute successfully under the demonstrated local-file workflow despite that browser warning.
+
+
+2. Run the Full Browser Audit
+
+Command:
+
+await ORL_MONEY_AUDIT.runAll()
+
+Expected final result:
+
+TOTAL 487/487 PASS
+
+Expected groups:
+
+VALIDATION 37/37 PASS
+CANONICALIZATION 15/15 PASS
+BALANCE BASIS 7/7 PASS
+CLAIM / OBSERVATION 13/13 PASS
+RESOLUTION 27/27 PASS
+EXACT MONEY 10/10 PASS
+MERGE ALGEBRA 259/259 PASS
+MULTI-UNIT 10/10 PASS
+BALANCE COMPATIBILITY 9/9 PASS
+PROJECTION 8/8 PASS
+BOUNDARY 7/7 PASS
+RECEIPTS / TAMPER 17/17 PASS
+REFERENCE SCENARIOS 20/20 PASS
+ORIGIN NEUTRALITY 2/2 PASS
+KNOWN REGRESSIONS 10/10 PASS
+PYTHON / BROWSER PARITY 36/36 PASS
+
+
+3. Run the Quick Browser Audit
+
+Command:
+
+ORL_MONEY_AUDIT.quick()
+
+Expected:
+
+passed: 143
+total: 143
+pass: true
+
+The quick audit becomes the most recently stored audit result.
+
+
+4. View the Most Recent Audit Result
+
+Command:
+
+ORL_MONEY_AUDIT.last()
+
+After a full audit, this returns the full audit result.
+
+After a quick audit, this returns the quick audit result.
+
+
+5. Check the Browser Version
+
+Command:
+
+ORLMoneyCore.VERSION
+
+Expected:
+
+2.1.0
+
+
+6. Inspect Declared Profiles
+
+Command:
+
+ORLMoneyCore.profiles
+
+Confirm the declared architecture, ruleset, schema, receipt, projection, compatibility, boundary, bundle, verification, and audit profile identifiers.
+
+
+7. Inspect the Two-Node Bundle
+
+Command:
+
+ORLMoneyCore.scenarioBundle("two-node")[1]
+
+Expected bundle result:
+
+ACCEPTED
+
+
+8. Inspect Two-Node Transaction States
+
+Command:
+
+ORLMoneyCore.transactionStateMap(ORLMoneyCore.scenarioBundle("two-node")[1])
+
+Expected:
+
+M100 = RESOLVED
+M200 = INCOMPLETE
+M300 = INCOMPLETE
+M400 = ABSTAIN
+M500 = ABSTAIN
+
+
+9. Inspect Two-Node Transaction Reasons
+
+Command:
+
+ORLMoneyCore.transactionReasonMap(ORLMoneyCore.scenarioBundle("two-node")[1])
+
+Expected:
+
+M100 = MATCHED_DEBIT_CREDIT_PAIR
+M200 = MISSING_DEBIT_CLAIM
+M300 = MISSING_CREDIT_CLAIM
+M400 = AMOUNT_MISMATCH
+M500 = MULTIPLE_CREDIT_CLAIMS
+
+
+10. Inspect Two-Node Final Balances
+
+Command:
+
+ORLMoneyCore.finalBalanceMap(ORLMoneyCore.scenarioBundle("two-node")[1])
+
+Expected:
+
+VillageA|UNIT = 500
+VillageB|UNIT = 1500
+
+
+11. Verify the Two-Node Bundle
+
+Command:
+
+ORLMoneyCore.verifyBundle(ORLMoneyCore.scenarioBundle("two-node")[1])
+
+Expected:
+
+valid: true
+
+
+12. Inspect Two-Node Evidence Counts
+
+Command:
+
+(() => {
+  const bundle = ORLMoneyCore.scenarioBundle("two-node")[1];
+  return {
+    raw_observations: bundle.evidence.raw_observation_count,
+    unique_observations: bundle.evidence.unique_observation_count,
+    unique_claims: bundle.evidence.unique_claim_count,
+    observation_multiplicity: bundle.evidence.observation_multiplicity_count
+  };
+})()
+
+Expected:
+
+raw_observations = 10
+unique_observations = 10
+unique_claims = 9
+observation_multiplicity = 1
+
+This demonstrates:
+
+observation multiplicity != financial multiplicity
+
+
+13. Inspect the Three-Node Transaction States
+
+Command:
+
+ORLMoneyCore.transactionStateMap(ORLMoneyCore.scenarioBundle("three-node")[1])
+
+Expected:
+
+M100 = RESOLVED
+M200 = RESOLVED
+M300 = RESOLVED
+M400 = ABSTAIN
+M500 = ABSTAIN
+
+
+14. Inspect the Three-Node Final Balances
+
+Command:
+
+ORLMoneyCore.finalBalanceMap(ORLMoneyCore.scenarioBundle("three-node")[1])
+
+Expected:
+
+VillageA|UNIT = 650
+VillageB|UNIT = 1300
+VillageC|UNIT = 1050
+
+
+15. Inspect Three-Node Reconstruction Progression
+
+Command:
+
+ORLMoneyCore.simulateThreeNodeRounds(ORLMoneyCore.getScenario("three-node"))
+
+Expected:
+
+before_match = false
+round_1_match = false
+round_2_match = true
+
+
+16. Inspect the Declared-Balance Conflict Scenario
+
+Command:
+
+ORLMoneyCore.transactionStateMap(ORLMoneyCore.scenarioBundle("balance-conflict")[1])
+
+Expected:
+
+T1 = RESOLVED
+T2 = RESOLVED
+
+Command:
+
+ORLMoneyCore.scenarioBundle("balance-conflict")[1].declared_balance_compatibility
+
+Expected overall state:
+
+CONFLICT
+
+This demonstrates:
+
+transaction resolution != declared balance compatibility
+
+No transaction winner is selected from arrival order.
+
+
+17. Inspect the Declared-Balance Conflict Assessment
+
+Command:
+
+ORLMoneyCore.scenarioBundle("balance-conflict")[1].declared_balance_compatibility.assessments
+
+Expected declared deficit:
+
+40
+
+
+18. Inspect the Multi-Unit Final Balances
+
+Command:
+
+ORLMoneyCore.finalBalanceMap(ORLMoneyCore.scenarioBundle("multi-unit")[1])
+
+Expected:
+
+A|EUR = 450
+A|USD = 800
+B|USD = 200
+C|EUR = 50
+
+
+19. Inspect Multi-Unit Conservation
+
+Command:
+
+ORLMoneyCore.unitConservationMap(ORLMoneyCore.scenarioBundle("multi-unit")[1])
+
+Expected:
+
+EUR = true
+USD = true
+
+
+20. Inspect the Multi-Unit Boundary
+
+Command:
+
+ORLMoneyCore.scenarioBundle("multi-unit")[1].boundary
+
+Expected state:
+
+SEALED
+
+
+21. Inspect Python Reference Identities
+
+Command:
+
+ORLMoneyCore.PYTHON_REFERENCE_IDS
+
+The full browser audit checks the declared parity values.
+
+Expected audit result:
+
+PYTHON / BROWSER PARITY 36/36 PASS
+
+
+22. Verify All Four Reference Bundles
+
+Command:
+
+["two-node", "three-node", "balance-conflict", "multi-unit"].map(name => {
+  const bundle = ORLMoneyCore.scenarioBundle(name)[1];
+  return {
+    scenario: name,
+    result: bundle.result,
+    valid: ORLMoneyCore.verifyBundle(bundle).valid,
+    financial_resolution_id: bundle.financial_resolution_id,
+    financial_bundle_id: bundle.financial_bundle_id
+  };
+})
+
+Expected:
+
+result = ACCEPTED
+valid = true
+
+for all four scenarios.
+
+
+23. Direct Tamper Rejection Test
+
+Command:
+
+(() => {
+  const bundle = structuredClone(ORLMoneyCore.scenarioBundle("two-node")[1]);
+  bundle.financial_bundle_id = "financial_bundle_tampered";
+  return ORLMoneyCore.verifyBundle(bundle);
+})()
+
+Expected:
+
+valid: false
+
+
+24. Tamper With a Financial Result
+
+Command:
+
+(() => {
+  const bundle = structuredClone(ORLMoneyCore.scenarioBundle("two-node")[1]);
+  bundle.structural_projection.account_receipts[0].final_amount_minor = "999";
+  return ORLMoneyCore.verifyBundle(bundle);
+})()
+
+Expected:
+
+valid: false
+
+
+25. Tamper With Observation Provenance
+
+Command:
+
+(() => {
+  const bundle = structuredClone(ORLMoneyCore.scenarioBundle("two-node")[1]);
+  bundle.inputs.observations[0].source = "Tampered-Origin";
+  return ORLMoneyCore.verifyBundle(bundle);
+})()
+
+Expected:
+
+valid: false
+
+
+26. Check Claim Identity Independence From Observation Origin
+
+Command:
+
+(() => {
+  const scenario = ORLMoneyCore.getScenario("two-node");
+  const original = structuredClone(scenario.merged_observations[0]);
+  const changed = structuredClone(original);
+  changed.source = "Different-Node";
+  return {
+    original_claim_id: ORLMoneyCore.claimId(original.fragment),
+    changed_claim_id: ORLMoneyCore.claimId(changed.fragment),
+    claim_identity_equal: ORLMoneyCore.claimId(original.fragment) === ORLMoneyCore.claimId(changed.fragment),
+    observation_identity_equal: ORLMoneyCore.observationId(original) === ORLMoneyCore.observationId(changed)
+  };
+})()
+
+Expected:
+
+claim_identity_equal = true
+observation_identity_equal = false
+
+
+27. Check Merge Idempotence
+
+Command:
+
+(() => {
+  const observations = ORLMoneyCore.getScenario("two-node").merged_observations;
+  const merged = ORLMoneyCore.mergeObservationSets(observations, observations);
+  return {
+    original_count: observations.length,
+    merged_unique_count: merged.length
+  };
+})()
+
+Expected:
+
+original_count = 10
+merged_unique_count = 10
+
+
+28. Check Lone High-Surrogate Refusal
+
+Command:
+
+ORLMoneyCore.resolveFinancialBundle(
+  [
+    ORLMoneyCore.makeBalance(
+      "A" + String.fromCharCode(0xD800),
+      "10",
+      "USD"
+    )
+  ],
+  [],
+  "OPEN",
+  false
+)
+
+Expected:
+
+result = REFUSED
+
+
+29. Check Lone Low-Surrogate Refusal
+
+Command:
+
+ORLMoneyCore.resolveFinancialBundle(
+  [
+    ORLMoneyCore.makeBalance(
+      "A" + String.fromCharCode(0xDFFF),
+      "10",
+      "USD"
+    )
+  ],
+  [],
+  "OPEN",
+  false
+)
+
+Expected:
+
+result = REFUSED
+
+
+30. Check Valid Astral Unicode
+
+Command:
+
+ORLMoneyCore.validateFragmentRecord(
+  ORLMoneyCore.makeFragment(
+    "T😀",
+    "debit",
+    "A",
+    "1",
+    "USD"
+  )
+)
+
+Expected:
+
+[]
+
+
+31. Check Non-Array Balance Intake
+
+Command:
+
+ORLMoneyCore.resolveFinancialBundle(
+  {},
+  [],
+  "OPEN",
+  false
+)
+
+Expected:
+
+result = REFUSED
+
+
+32. Check Non-Array Observation Intake
+
+Command:
+
+ORLMoneyCore.resolveFinancialBundle(
+  [],
+  {},
+  "OPEN",
+  false
+)
+
+Expected:
+
+result = REFUSED
+
+
+33. Interactive UI Commands
+
+Reset current scenario:
+
+document.getElementById("resetBtn").click()
+
+Add a duplicate claim observation:
+
+document.getElementById("duplicateBtn").click()
+
+Change observation origin:
+
+document.getElementById("originBtn").click()
+
+Complete missing transaction structure:
+
+document.getElementById("completeBtn").click()
+
+Create an amount mismatch:
+
+document.getElementById("mismatchBtn").click()
+
+Shuffle evidence order:
+
+document.getElementById("shuffleBtn").click()
+
+Repartition observation origins:
+
+document.getElementById("repartitionBtn").click()
+
+Toggle the evidence boundary:
+
+document.getElementById("boundaryBtn").click()
+
+Verify the current displayed bundle:
+
+document.getElementById("verifyBtn").click()
+
+Run the interactive tamper test:
+
+document.getElementById("tamperBtn").click()
+
+A console result of:
+
+undefined
+
+after a direct `.click()` command is normal. The action is performed and `.click()` does not return a result value.
+
+
+34. Recommended Browser Verification Sequence
+
+Run:
+
+await ORL_MONEY_AUDIT.runAll()
+
+Confirm:
+
+TOTAL 487/487 PASS
+
+Then inspect:
+
+ORLMoneyCore.verifyBundle(ORLMoneyCore.scenarioBundle("two-node")[1])
+
+Confirm:
+
+valid: true
+
+Then inspect:
+
+ORLMoneyCore.simulateThreeNodeRounds(ORLMoneyCore.getScenario("three-node"))
+
+Confirm:
+
+before_match = false
+round_1_match = false
+round_2_match = true
+
+Then inspect:
+
+ORLMoneyCore.scenarioBundle("balance-conflict")[1].declared_balance_compatibility
+
+Confirm:
+
+state = CONFLICT
+
+Then inspect:
+
+ORLMoneyCore.unitConservationMap(ORLMoneyCore.scenarioBundle("multi-unit")[1])
+
+Confirm:
+
+EUR = true
+USD = true
+
+Then run the surrogate and non-array intake checks.
+
+Then run the direct tamper rejection test and confirm:
+
+valid: false
+
+
+35. Python Reference Audit
+
+From the repository root:
+
+python demo/ORL_Money_Reference_Kernel_v2_1_0.py --audit
+
+Linux and macOS systems may use:
+
+python3 demo/ORL_Money_Reference_Kernel_v2_1_0.py --audit
+
+Expected:
+
+TOTAL 451/451 PASS
+
+
+36. Independent Verifier Self-Test
+
+From the repository root:
+
+python verifier/ORL_Money_Independent_Verifier_v2_1_0.py --self-test
+
+Linux and macOS systems may use:
+
+python3 verifier/ORL_Money_Independent_Verifier_v2_1_0.py --self-test
+
+Expected:
+
+TOTAL 85/85 PASS
+
+
+37. Independent Bundle Verification
+
+Windows Command Prompt
+
+Create a temporary bundle:
+
+python demo/ORL_Money_Reference_Kernel_v2_1_0.py --scenario two-node --json > "%TEMP%\ORL_Money_two_node_v2_1_0_test.json"
+
+Verify it:
+
+python verifier/ORL_Money_Independent_Verifier_v2_1_0.py --bundle "%TEMP%\ORL_Money_two_node_v2_1_0_test.json"
+
+Delete the temporary file:
+
+del "%TEMP%\ORL_Money_two_node_v2_1_0_test.json"
+
+
+Linux / macOS
+
+Create a temporary file and generate the bundle:
+
+TMP_FILE="$(mktemp "${TMPDIR:-/tmp}/orl-money-bundle.XXXXXX.json")"
+python3 demo/ORL_Money_Reference_Kernel_v2_1_0.py --scenario two-node --json > "$TMP_FILE"
+
+Verify it:
+
+python3 verifier/ORL_Money_Independent_Verifier_v2_1_0.py --bundle "$TMP_FILE"
+
+Delete the temporary file:
+
+rm -f "$TMP_FILE"
+
+
+Expected:
+
+Result = PASS
+Reason code = VERIFIED
+Independent reconstruction = True
+Producer implementation imported = False
+
+
+38. Duplicate JSON Key Refusal
+
+The verifier rejects duplicate JSON object keys during parsing.
+
+Windows Command Prompt
+
+Create a temporary duplicate-key document:
+
+echo {"result":"ACCEPTED","result":"REFUSED"}>"%TEMP%\orl_money_duplicate.json"
+
+Verify it:
+
+python verifier/ORL_Money_Independent_Verifier_v2_1_0.py --bundle "%TEMP%\orl_money_duplicate.json"
+
+Delete the temporary file:
+
+del "%TEMP%\orl_money_duplicate.json"
+
+
+Linux / macOS
+
+Create a temporary file:
+
+TMP_FILE="$(mktemp "${TMPDIR:-/tmp}/orl-money-duplicate.XXXXXX.json")"
+
+Write the duplicate-key JSON exactly:
+
+printf '%s' '{"result":"ACCEPTED","result":"REFUSED"}' > "$TMP_FILE"
+
+Verify it:
+
+python3 verifier/ORL_Money_Independent_Verifier_v2_1_0.py --bundle "$TMP_FILE"
+
+Delete the temporary file:
+
+rm -f "$TMP_FILE"
+
+
+Expected:
+
+Failure stage = PARSE
+Reason code = DUPLICATE_JSON_KEY
+
+
+39. Exact Canonical-Byte Verification
+
+A redirected CLI bundle normally contains a trailing newline, so it may pass semantic reconstruction while failing strict canonical-byte verification.
+
+The distinction is:
+
+semantic reconstruction != exact canonical-byte identity
+
+
+Windows Command Prompt
+
+Create an exact canonical-byte bundle:
+
+python -c "import importlib.util,pathlib; p=r'demo/ORL_Money_Reference_Kernel_v2_1_0.py'; s=importlib.util.spec_from_file_location('orl',p); m=importlib.util.module_from_spec(s); s.loader.exec_module(m); b=m.scenario_bundle('two-node')[1]; pathlib.Path(r'%TEMP%\ORL_Money_two_node_v2_1_0_canonical.json').write_text(m.canonical_json(b),encoding='utf-8')"
+
+Verify it:
+
+python verifier/ORL_Money_Independent_Verifier_v2_1_0.py --bundle "%TEMP%\ORL_Money_two_node_v2_1_0_canonical.json" --strict-canonical
+
+Delete the temporary file:
+
+del "%TEMP%\ORL_Money_two_node_v2_1_0_canonical.json"
+
+
+Linux / macOS
+
+Create a temporary file:
+
+TMP_FILE="$(mktemp "${TMPDIR:-/tmp}/orl-money-canonical.XXXXXX.json")"
+
+Write the exact canonical JSON bytes:
+
+TMP_FILE="$TMP_FILE" python3 -c "import importlib.util,os,pathlib; p='demo/ORL_Money_Reference_Kernel_v2_1_0.py'; s=importlib.util.spec_from_file_location('orl',p); m=importlib.util.module_from_spec(s); s.loader.exec_module(m); b=m.scenario_bundle('two-node')[1]; pathlib.Path(os.environ['TMP_FILE']).write_text(m.canonical_json(b),encoding='utf-8')"
+
+Verify it:
+
+python3 verifier/ORL_Money_Independent_Verifier_v2_1_0.py --bundle "$TMP_FILE" --strict-canonical
+
+Delete the temporary file:
+
+rm -f "$TMP_FILE"
+
+
+Expected:
+
+Result = PASS
+Reason code = VERIFIED
+Independent reconstruction = True
+
+
+40. Independent Frozen Corpus Verification
+
+Run:
+
+python verifier/ORL_Money_Independent_Verifier_v2_1_0.py --corpus corpus/ORL_Money_Frozen_Corpus_Manifest_v2_1_0.json --strict-canonical
+
+Linux and macOS systems may use:
+
+python3 verifier/ORL_Money_Independent_Verifier_v2_1_0.py --corpus corpus/ORL_Money_Frozen_Corpus_Manifest_v2_1_0.json --strict-canonical
+
+Expected:
+
+Result = PASS
+Summary = 4/4 PASS
+Reason code = VERIFIED
+
+Expected scenarios:
+
+two-node = PASS
+three-node = PASS
+balance-conflict = PASS
+multi-unit = PASS
+
+Expected manifest ID:
+
+corpus_manifest_e549dcf1ff970db2ffd1422da39cfba328860f1afae55970229a051d9c80b05e
+
+
+41. Verifier Exit Codes
+
+The command-line verifier uses:
+
+0 = verification or self-test PASS
+1 = verification, corpus, data, intake, or file-access FAIL
+2 = command-line usage error or missing mode
+
+Missing files, unreadable files, invalid UTF-8, malformed JSON, duplicate JSON keys, canonicalization failures, and verification mismatches return exit code 1.
+
+Exit code 2 is reserved for command-line usage errors, such as invoking the verifier without selecting a supported verification mode.
+
+
+42. Current Verification Summary
+
+Python reference kernel:
+
+451/451 PASS
+
+Browser laboratory:
+
+487/487 PASS
+
+Python/browser parity:
+
+36/36 PASS
+
+Browser quick audit:
+
+143/143 PASS
+
+Independent verifier self-test:
+
+85/85 PASS
+
+Frozen corpus with strict canonical verification:
+
+4/4 PASS
+
+
+43. Scope
+
+These commands verify the declared ORL-Money v2.1.0 bounded reference behavior.
+
+They do not establish:
+
+- truth of source observations
+- account ownership
+- authorization
+- payment execution
+- clearing
+- settlement
+- legal finality
+- complete fraud prevention
+- universal financial correctness
+- production security
+

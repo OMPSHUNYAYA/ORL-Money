@@ -1,0 +1,951 @@
+ORL-Money Core Architecture v2.1.0
+
+Profile: ORL-MONEY-ARCH-2-D02
+Ruleset: ORL-MONEY-RULES-2-D02
+Version: 2.1.0
+
+
+1. Purpose
+
+ORL-Money is a deterministic reference architecture for bounded financial reconciliation over validated balance records and money-claim observations.
+
+The core governing relation is:
+
+`same validated balance basis + same canonical money claim set + same ruleset + same compatibility profile + same boundary declaration -> same bounded financial resolution`
+
+ORL-Money separates concepts that are often collapsed into one result:
+
+`observation != financial claim`
+
+`transaction resolution != declared balance compatibility`
+
+`resolution != evidence-boundary closure`
+
+`financial reconciliation != authorization`
+
+`financial reconciliation != execution`
+
+`financial reconciliation != settlement`
+
+The architecture is designed to make the current bounded result inspectable, reproducible, and independently reconstructable without using arrival order as transaction-classification authority.
+
+
+2. Reference Boundary
+
+ORL-Money v2.1.0 provides a reference implementation of:
+
+- strict validation for declared balance records, observations, and money fragments
+- explicit refusal of non-array balance and observation inputs
+- Unicode scalar-safe identifier validation
+- canonical deterministic identities
+- exact integer-string money representation
+- claim identity separated from observation provenance
+- exact observation deduplication
+- financial-claim deduplication
+- deterministic transaction-state resolution
+- explicit state reasons and structural witnesses
+- account and unit projection receipts
+- declared-balance compatibility assessment
+- OPEN and SEALED evidence-boundary declarations
+- deterministic financial-resolution and financial-bundle identities
+- producer self-verification
+- browser parity against declared Python reference identities
+- independent Python reconstruction without importing the producer implementation
+- duplicate-key-safe and UTF-8-safe verifier intake
+- optional exact canonical-byte verification
+- one-command frozen-corpus verification
+- a canonical four-scenario verification corpus
+
+The reference model does not by itself establish:
+
+- account ownership
+- authorization
+- identity proof
+- legal validity
+- available-funds truth outside the declared balance basis
+- payment execution
+- account posting
+- clearing
+- settlement
+- fraud prevention
+- regulatory compliance
+- consensus
+- Byzantine fault tolerance
+- reliable broadcast
+- immutable finality
+- complete real-world double-spend prevention
+- production security
+- universal financial correctness
+
+
+3. Processing Architecture
+
+The reference producer path is:
+
+`raw balance records + raw observations`
+
+`-> validate top-level collection shape`
+
+`-> validate records and Unicode scalar structure`
+
+`-> canonicalize`
+
+`-> identify balance records, claims, and observations`
+
+`-> absorb exact observation duplicates`
+
+`-> collapse observations onto unique financial claims`
+
+`-> resolve transaction structure`
+
+`-> construct transaction receipts and witnesses`
+
+`-> construct structural projection`
+
+`-> evaluate declared-balance compatibility`
+
+`-> construct evidence-boundary receipt`
+
+`-> construct evidence maturity`
+
+`-> construct financial resolution identity`
+
+`-> construct provenance-sensitive financial bundle identity`
+
+`-> self-verify`
+
+The independent verification path is:
+
+`JSON bytes`
+
+`-> bounded file intake`
+
+`-> UTF-8 decode`
+
+`-> duplicate-key-safe JSON parse`
+
+`-> optional exact canonical-byte check`
+
+`-> bundle or corpus intake validation`
+
+`-> independent structural reconstruction`
+
+`-> deterministic comparison`
+
+`-> PASS or bounded failure result`
+
+
+4. Profiles
+
+The v2.1.0 reference implementation uses the following profiles:
+
+Architecture:
+`ORL-MONEY-ARCH-2-D02`
+
+Ruleset:
+`ORL-MONEY-RULES-2-D02`
+
+Balance schema:
+`ORL-MONEY-BALANCE-2-D02`
+
+Fragment schema:
+`ORL-FRAGMENT-2-D02`
+
+Observation schema:
+`ORL-MONEY-OBSERVATION-2-D02`
+
+Transaction receipt profile:
+`ORL-MONEY-TX-RECEIPT-2-D02`
+
+Projection profile:
+`ORL-MONEY-PROJECTION-2-D02`
+
+Declared-balance compatibility profile:
+`ORL-MONEY-BALANCE-COMPAT-GROSS-1-D02`
+
+Boundary profile:
+`ORL-MONEY-BOUNDARY-1-D02`
+
+Bundle profile:
+`ORL-MONEY-BUNDLE-2-D02`
+
+Producer verification profile:
+`ORL-MONEY-VERIFICATION-1-D02`
+
+Python audit profile:
+`ORL-MONEY-AUDIT-2-D03`
+
+Browser audit profile:
+`ORL-MONEY-AUDIT-2-D04`
+
+Independent verification profile:
+`ORL-MONEY-INDEPENDENT-VERIFICATION-1-D02`
+
+Independent verifier self-test profile:
+`ORL-MONEY-INDEPENDENT-VERIFIER-SELF-TEST-1-D02`
+
+Frozen corpus profile:
+`ORL-MONEY-FROZEN-CORPUS-1-D02`
+
+Frozen corpus manifest profile:
+`ORL-MONEY-FROZEN-CORPUS-MANIFEST-1-D02`
+
+Corpus verification profile:
+`ORL-MONEY-CORPUS-VERIFICATION-1-D01`
+
+
+5. Canonical Data Model
+
+5.1 Balance Record
+
+A supported balance record contains exactly:
+
+`schema`
+`account`
+`amount_minor`
+`unit`
+
+The required schema is:
+
+`ORL-MONEY-BALANCE-2-D02`
+
+A balance amount may be zero and is represented as a canonical decimal integer string.
+
+Example shape:
+
+`{"schema":"ORL-MONEY-BALANCE-2-D02","account":"VillageA","amount_minor":"1000","unit":"UNIT"}`
+
+
+5.2 Money Fragment
+
+A supported money fragment contains exactly:
+
+`schema`
+`tx`
+`side`
+`account`
+`amount_minor`
+`unit`
+
+The required schema is:
+
+`ORL-FRAGMENT-2-D02`
+
+Supported sides are:
+
+`debit`
+`credit`
+
+Transaction amounts must be positive canonical decimal integer strings.
+
+Example shape:
+
+`{"schema":"ORL-FRAGMENT-2-D02","tx":"M100","side":"debit","account":"VillageA","amount_minor":"500","unit":"UNIT"}`
+
+
+5.3 Observation
+
+A supported observation contains exactly:
+
+`schema`
+`observation_ref`
+`source`
+`fragment`
+
+The required schema is:
+
+`ORL-MONEY-OBSERVATION-2-D02`
+
+An observation preserves provenance around a financial claim.
+
+The core distinction is:
+
+`observation identity != financial claim identity`
+
+
+6. Validation Rules
+
+The balance collection must be an array.
+
+The observation collection must be an array.
+
+Identifiers must:
+
+- be strings
+- be non-empty
+- be no longer than 128 Unicode characters
+- contain no leading or trailing whitespace
+- be NFC-normalized
+- contain no Unicode characters from categories `Cc`, `Cf`, or `Cs`
+
+The `Cs` exclusion deterministically rejects lone surrogate code points before hashing.
+
+Valid astral Unicode scalar values remain eligible when all other identifier rules are satisfied.
+
+Units must match:
+
+`^[A-Z][A-Z0-9_-]{0,15}$`
+
+Balance amounts must be canonical decimal integer strings of at most 78 digits, with zero allowed.
+
+Transaction amounts must be canonical positive decimal integer strings of at most 78 digits.
+
+Examples rejected by the declared amount grammar include:
+
+`01`
+`+1`
+`-1`
+`1.0`
+`1e3`
+
+A transaction claim with:
+
+`amount_minor = "0"`
+
+is refused.
+
+Unsupported, missing, or extra fields are refused.
+
+Invalid boundary declarations are refused.
+
+
+7. Canonicalization and Identity
+
+The reference implementation uses canonical JSON with:
+
+- UTF-8 encoding
+- object keys sorted lexicographically
+- compact separators
+- Unicode preserved directly
+- non-finite JSON numbers disallowed
+
+Identity is derived conceptually as:
+
+`identity = prefix + "_" + SHA256(canonical_json({"profile": profile, "value": value}))`
+
+The system assigns deterministic identities to structural objects including:
+
+- balance records
+- balance snapshots
+- financial claims
+- observations
+- claim sets
+- observation sets
+- transaction evidence
+- transaction receipts
+- transaction receipt roots
+- account projections
+- unit projections
+- projection roots
+- compatibility receipts
+- boundary receipts
+- financial resolutions
+- financial bundles
+- refusals
+
+
+8. Claim Identity and Observation Provenance
+
+A financial claim is identified from the canonical money fragment.
+
+An observation is identified from:
+
+- observation schema
+- observation reference
+- source
+- financial claim identity
+
+This means multiple distinct observations may refer to one financial claim.
+
+The central relation is:
+
+`observation multiplicity != financial multiplicity`
+
+An exact duplicate observation is absorbed at the observation layer.
+
+Distinct observations of the same claim remain visible as provenance while the financial resolver operates over the unique canonical claim set.
+
+
+9. Balance Basis Resolution
+
+Exact duplicate balance records are absorbed.
+
+Balance records are grouped by:
+
+`(account, unit)`
+
+If one canonical amount remains for an account-unit pair, that pair contributes to the resolved balance basis.
+
+If more than one distinct amount remains for the same account-unit pair:
+
+`balance_basis.state = CONFLICT`
+
+The structural projection then becomes:
+
+`projection.state = UNAVAILABLE`
+
+with reason:
+
+`BALANCE_BASIS_CONFLICT`
+
+A balance-basis conflict does not silently select one declared amount.
+
+
+10. Transaction Resolution
+
+Claims are grouped by transaction identifier.
+
+The deterministic precedence is:
+
+`multiple debit claims AND multiple credit claims -> ABSTAIN / MULTIPLE_DEBIT_AND_CREDIT_CLAIMS`
+
+`multiple debit claims -> ABSTAIN / MULTIPLE_DEBIT_CLAIMS`
+
+`multiple credit claims -> ABSTAIN / MULTIPLE_CREDIT_CLAIMS`
+
+`missing debit claim -> INCOMPLETE / MISSING_DEBIT_CLAIM`
+
+`missing credit claim -> INCOMPLETE / MISSING_CREDIT_CLAIM`
+
+`unit mismatch -> ABSTAIN / UNIT_MISMATCH`
+
+`amount mismatch -> ABSTAIN / AMOUNT_MISMATCH`
+
+`one debit + one credit + same unit + same amount -> RESOLVED / MATCHED_DEBIT_CREDIT_PAIR`
+
+Only a `RESOLVED` transaction produces structural projection contributions.
+
+For a resolved amount `x`:
+
+`debit contribution = -x`
+
+`credit contribution = +x`
+
+`INCOMPLETE` and `ABSTAIN` transactions produce no structural projection contribution.
+
+
+11. Witness-Carrying Resolution
+
+Every transaction receipt contains:
+
+- transaction identifier
+- transaction evidence identity
+- claim identities
+- state
+- reason code
+- structural witness
+- projection contributions, when resolved
+- transaction receipt identity
+
+A resolved witness identifies the matching debit and credit claims.
+
+An incomplete witness identifies:
+
+- present claims
+- the missing structural requirement
+
+An abstention witness identifies the conflicting claim structure or the exact mismatch.
+
+
+12. Structural Projection
+
+The projection is derived from:
+
+`resolved balance basis + RESOLVED transaction contributions`
+
+For each account-unit pair:
+
+`final_amount_minor = initial_amount_minor + sum(resolved contribution deltas)`
+
+Every account projection carries the transaction receipt identities that contributed to its net change.
+
+Unit receipts aggregate account projections by unit.
+
+For each unit:
+
+`net_delta_minor = sum(account net deltas)`
+
+The current conservation check is:
+
+`conservation_ok = (initial_total_minor = final_total_minor) AND (net_delta_minor = 0)`
+
+Because every resolved transaction contributes equal and opposite values in the same unit, the supplied valid scenarios demonstrate unit-local conservation.
+
+
+13. Declared-Balance Compatibility
+
+ORL-Money keeps transaction resolution separate from declared-balance compatibility.
+
+The current compatibility profile is:
+
+`ORL-MONEY-BALANCE-COMPAT-GROSS-1-D02`
+
+Its declared rule is:
+
+`resolved_gross_outflow <= declared_initial_balance`
+
+For every account-unit pair with resolved debit-side outflow:
+
+- `COMPATIBLE` means resolved gross outflow does not exceed the declared initial balance basis
+- `CONFLICT` means resolved gross outflow exceeds the declared initial balance basis
+- `UNASSESSED` means no declared balance basis exists for the account-unit pair
+
+The compatibility check is not a claim of actual available funds.
+
+It is a deterministic assessment against the declared balance basis.
+
+A key separation is:
+
+`transaction_state = RESOLVED`
+
+may coexist with:
+
+`declared_balance_compatibility = CONFLICT`
+
+This prevents arrival order from silently acting as an allocation rule when multiple structurally resolved claims are jointly incompatible with the declared balance basis.
+
+
+14. Evidence Boundary
+
+The declared evidence-boundary states are:
+
+`OPEN`
+`SEALED`
+
+For `OPEN`:
+
+`declared_sealed_claim_set_id = null`
+
+For `SEALED`:
+
+`declared_sealed_claim_set_id = observed_claim_set_id`
+
+A SEALED boundary means the current claim set is explicitly declared as the sealed claim set for this bounded evaluation.
+
+It does not mean:
+
+- legal finality
+- settlement finality
+- immutable global completeness
+- proof that no evidence exists elsewhere
+
+
+15. Evidence Maturity
+
+The bundle reports an evidence-maturity view containing:
+
+- accepted claims
+- unique observations
+- observation multiplicity
+- resolved transaction count
+- incomplete transaction count
+- abstain transaction count
+- boundary state
+
+Evidence maturity is structural metadata.
+
+It is not wall-clock time and does not create authority from sequence.
+
+
+16. Financial Resolution Identity and Financial Bundle Identity
+
+The financial resolution identity is derived from the financial structure:
+
+- bundle profile and version
+- architecture profile
+- ruleset profile
+- compatibility profile
+- balance snapshot identity
+- claim set identity
+- transaction receipt root
+- projection root
+- compatibility receipt identity
+- boundary receipt identity
+
+Conceptually:
+
+`financial_resolution_id = H(financial structure)`
+
+The financial bundle identity additionally commits to provenance through the observation set identity:
+
+`financial_bundle_id = H(financial_resolution_id + observation_set_id)`
+
+This creates an intentional distinction:
+
+`same canonical financial claim structure + different observation provenance -> same financial resolution identity, different financial bundle identity`
+
+when all other financial-resolution inputs remain equal.
+
+
+17. Producer Verification Architecture
+
+The Python kernel and browser reconstruct an accepted bundle from its embedded inputs and compare the reconstructed structure with the supplied structure.
+
+The producer verification profile is:
+
+`ORL-MONEY-VERIFICATION-1-D02`
+
+The current reference scenarios self-verify successfully.
+
+
+18. Python and Browser Parity
+
+The browser laboratory implements the same declared v2.1.0 contract and checks the declared Python reference identities.
+
+The browser audit contains:
+
+`PYTHON / BROWSER PARITY 36/36 PASS`
+
+The full browser audit reports:
+
+`487/487 PASS`
+
+The Python kernel audit reports:
+
+`451/451 PASS`
+
+This establishes audited parity for the declared reference scenarios and tested cases.
+
+It is not a universal proof that every possible future or arbitrary input will produce cross-engine equivalence.
+
+
+19. Independent Verification Architecture
+
+The independent Python verifier does not import the producer reference kernel.
+
+It independently reconstructs the declared bundle structure from embedded inputs and compares:
+
+- complete reconstructed bundle content
+- financial resolution identity
+- financial bundle identity
+- balance snapshot identity
+- claim set identity
+- observation set identity
+- transaction receipt root
+- projection root
+- compatibility receipt identity
+- boundary receipt identity
+
+The independent verification profile is:
+
+`ORL-MONEY-INDEPENDENT-VERIFICATION-1-D02`
+
+Its normal verification result has a stable machine-readable shape for both success and failure.
+
+The verifier reports:
+
+- `failure_stage`
+- `reason_code`
+- independent reconstruction status
+- producer-import status
+- producer self-verification visibility
+- supplied and reconstructed structural identities
+
+The verifier returns deterministic failure results for declared public-input errors rather than allowing those errors to escape as ordinary tracebacks.
+
+
+20. Independent JSON Intake
+
+The independent verifier reads input through a separate JSON intake path.
+
+The path is:
+
+`bytes -> size check -> UTF-8 decode -> duplicate-key-safe parse -> optional canonical-byte check -> structural intake`
+
+The current maximum JSON file size is:
+
+`16 MiB`
+
+The verifier refuses:
+
+- missing files
+- unreadable files
+- invalid UTF-8
+- duplicate JSON object keys
+- invalid JSON
+- non-standard JSON constants
+- unsupported JSON nesting when parsing cannot safely complete
+- non-canonical bytes when strict canonical verification is requested
+
+This intake boundary is a verifier property.
+
+It is distinct from ORL-Money's financial resolution semantics.
+
+
+21. Semantic Verification and Canonical-Byte Verification
+
+Two verification questions are intentionally separated.
+
+Semantic independent reconstruction asks:
+
+`does the supplied parsed bundle reconstruct to the same declared structure?`
+
+Exact canonical-byte verification asks:
+
+`are the supplied file bytes exactly the canonical UTF-8 JSON serialization?`
+
+The verifier supports semantic bundle verification with:
+
+`--bundle`
+
+and exact canonical-byte enforcement with:
+
+`--strict-canonical`
+
+A semantically equivalent JSON document may fail strict canonical-byte verification because of insignificant whitespace or a trailing newline.
+
+The frozen v2.1.0 corpus is stored in exact canonical JSON form.
+
+
+22. Frozen Verification Corpus
+
+The corpus contains:
+
+`ORL_Money_Frozen_Corpus_Manifest_v2_1_0.json`
+
+`ORL_Money_two_node_bundle_v2_1_0.json`
+
+`ORL_Money_three_node_bundle_v2_1_0.json`
+
+`ORL_Money_balance_conflict_bundle_v2_1_0.json`
+
+`ORL_Money_multi_unit_bundle_v2_1_0.json`
+
+The corpus profile is:
+
+`ORL-MONEY-FROZEN-CORPUS-1-D02`
+
+The corpus manifest profile is:
+
+`ORL-MONEY-FROZEN-CORPUS-MANIFEST-1-D02`
+
+The corpus verifier profile is:
+
+`ORL-MONEY-CORPUS-VERIFICATION-1-D01`
+
+The current frozen corpus contains four scenarios and records their expected structural identities and file SHA-256 values.
+
+The manifest ID is:
+
+`corpus_manifest_e549dcf1ff970db2ffd1422da39cfba328860f1afae55970229a051d9c80b05e`
+
+The current corpus result is:
+
+`4/4 PASS`
+
+with strict canonical verification enabled.
+
+
+23. Corpus Verification Architecture
+
+The `--corpus` verifier mode checks the manifest and each declared bundle.
+
+The current checks include:
+
+- exact manifest field structure
+- profile agreement
+- manifest identity
+- scenario count
+- unique scenario names
+- unique filenames
+- safe single-file relative filenames
+- recorded bundle SHA-256
+- optional exact canonical bytes
+- independent bundle reconstruction
+- manifest-recorded structural identity agreement
+
+The verifier does not treat path traversal, absolute paths, or nested path syntax in manifest bundle filenames as valid corpus entries.
+
+
+24. Reference Scenarios
+
+24.1 Two-Node Reconciliation
+
+Expected transaction states:
+
+`M100 -> RESOLVED`
+
+`M200 -> INCOMPLETE`
+
+`M300 -> INCOMPLETE`
+
+`M400 -> ABSTAIN`
+
+`M500 -> ABSTAIN`
+
+Expected summary:
+
+`R:1 I:2 A:2`
+
+Expected final projection:
+
+`VillageA|UNIT = 500`
+
+`VillageB|UNIT = 1500`
+
+Financial resolution identity:
+
+`financial_resolution_a22b3ac1bea76f7f7573f539a8a2c76c257d149fc5b8a965fe17b0314f2154c0`
+
+Financial bundle identity:
+
+`financial_bundle_675d2d0d6fd03e48c7839efcf7cf35b802ea6741aacdb0fd3682c3c599d27c38`
+
+
+24.2 Three-Node Reconstruction
+
+Expected final transaction states:
+
+`M100 -> RESOLVED`
+
+`M200 -> RESOLVED`
+
+`M300 -> RESOLVED`
+
+`M400 -> ABSTAIN`
+
+`M500 -> ABSTAIN`
+
+Expected final projection:
+
+`VillageA|UNIT = 650`
+
+`VillageB|UNIT = 1300`
+
+`VillageC|UNIT = 1050`
+
+Expected reconstruction progression:
+
+`before_match = false`
+
+`round_1_match = false`
+
+`round_2_match = true`
+
+Financial resolution identity:
+
+`financial_resolution_eff3518564740a56633fe54188412bed95fa6730806d1c9a417f7e9edce48750`
+
+Financial bundle identity:
+
+`financial_bundle_cecf58e08d1094ca544933bb41224f0b62eb45361d2cab3cc51db724453da5a7`
+
+
+24.3 Declared Balance Conflict
+
+Expected transaction states:
+
+`T1 -> RESOLVED`
+
+`T2 -> RESOLVED`
+
+Expected compatibility state:
+
+`CONFLICT`
+
+The reference scenario demonstrates a declared deficit of:
+
+`40`
+
+No transaction winner is selected from arrival order.
+
+Financial resolution identity:
+
+`financial_resolution_953a07db0963a353a6f842d9e27ec1ebe8179f5c62dc575a7469dcec006ff563`
+
+Financial bundle identity:
+
+`financial_bundle_e417834eda2b546169ecba938edd341c189211dc57a4191ab5f2a19f1ae8a797`
+
+
+24.4 Multi-Unit Isolation
+
+Expected final projection:
+
+`A|USD = 800`
+
+`B|USD = 200`
+
+`A|EUR = 450`
+
+`C|EUR = 50`
+
+Expected unit conservation:
+
+`USD = true`
+
+`EUR = true`
+
+Expected boundary:
+
+`SEALED`
+
+Financial resolution identity:
+
+`financial_resolution_1044b8ce1f2c1c96883421e663bb9a4712d9d836a2a89225d4695f9119efd86e`
+
+Financial bundle identity:
+
+`financial_bundle_a3a4ebc088c10eeef2bae5d82284e837038f8810fef1e682f24a91a398f99de8`
+
+
+25. Verification Evidence
+
+Python reference kernel:
+
+`451/451 PASS`
+
+Browser laboratory:
+
+`487/487 PASS`
+
+Python/browser parity:
+
+`36/36 PASS`
+
+Browser quick audit:
+
+`143/143 PASS`
+
+Independent verifier self-test:
+
+`85/85 PASS`
+
+Frozen corpus with strict canonical verification:
+
+`4/4 PASS`
+
+
+26. Deployment Position
+
+ORL-Money is suitable as a reference architecture for exploring:
+
+- bounded reconciliation
+- deterministic structural comparison
+- provenance-preserving duplicate handling
+- explainable financial-state reconstruction
+- offline bundle verification
+- pre-execution or pre-settlement structural checks
+- independently reconstructable evidence
+- canonical corpus verification
+
+A future integration may use an ORL-Money financial bundle as an input to a separate downstream dependency, activation, authorization, execution, or settlement layer.
+
+Those downstream functions remain outside the ORL-Money v2.1.0 contract.
+
+
+27. Core Architectural Statement
+
+ORL-Money v2.1.0 resolves a bounded financial view from validated canonical structure while preserving provenance, explicit incompleteness, explicit conflict, unit-separated projection, declared-balance compatibility, evidence-boundary state, deterministic receipts, and independently reconstructable identities.
+
+The core relation remains:
+
+`same validated balance basis + same canonical money claim set + same ruleset + same compatibility profile + same boundary declaration -> same bounded financial resolution`
+
+Provenance is preserved separately:
+
+`same financial resolution + different observation provenance -> potentially different financial bundle identity`
+
+Verification authority is also separated:
+
+`producer self-verification != independent reconstruction != artifact byte identity`
