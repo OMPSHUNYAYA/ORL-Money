@@ -1,62 +1,1010 @@
-name: ORL-Money Verify
+name: ORL-Money Deterministic Verification
 
 on:
   push:
-    branches: [ main, master ]
+    branches: ["main"]
   pull_request:
-    branches: [ main, master ]
+    branches: ["main"]
   workflow_dispatch:
+
+permissions:
+  contents: read
 
 jobs:
   verify:
+    name: Verify ORL-Money v2.1.0
     runs-on: ubuntu-latest
+    timeout-minutes: 30
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v7
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v7
         with:
           python-version: "3.11"
 
-      - name: Verify frozen demo hashes
+      - name: Verify frozen artifact checkpoint
+        shell: bash
         run: |
-          expected_ref=$(grep 'orl_money_demo_reference.py' verify/FREEZE_DEMO_SHA256.txt | awk '{print $NF}' | tr -d '\r')
-          expected_multi=$(grep 'orl_money_demo_multinode.py' verify/FREEZE_DEMO_SHA256.txt | awk '{print $NF}' | tr -d '\r')
-          expected_html=$(grep 'orl_money_demo_v1.html' verify/FREEZE_DEMO_SHA256.txt | awk '{print $NF}' | tr -d '\r')
+          set -euo pipefail
 
-          actual_ref=$(sha256sum demo/orl_money_demo_reference.py | awk '{print $1}')
-          actual_multi=$(sha256sum demo/orl_money_demo_multinode.py | awk '{print $1}')
-          actual_html=$(sha256sum demo/orl_money_demo_v1.html | awk '{print $1}')
+          python <<'PY'
+          from pathlib import Path
+          import hashlib
+          import re
+          import sys
 
-          [ "$actual_ref" = "$expected_ref" ] || (echo "reference demo hash mismatch" && exit 1)
-          [ "$actual_multi" = "$expected_multi" ] || (echo "multi-node demo hash mismatch" && exit 1)
-          [ "$actual_html" = "$expected_html" ] || (echo "html demo hash mismatch" && exit 1)
+          pins = {
+              "demo/ORL_Money_Reference_Kernel_v2_1_0.py":
+                  "e0dd939f8758a17217c426aa08b693eb5f2d07be43fb78f6ddb8a16fee9ae2bc",
+              "demo/ORL_Money_Structural_Lab_v2_1_0.html":
+                  "b611e533f1c4f9a06c1866ca8695ec44527f7193ceae6ee9da7d74c7e54c7954",
+              "verifier/ORL_Money_Independent_Verifier_v2_1_0.py":
+                  "f4526c1d45bf5aeb9c54e7dd0712278ce66044bdf132bec31d1ce45096e48f43",
+              "corpus/ORL_Money_Frozen_Corpus_Manifest_v2_1_0.json":
+                  "82e45ca90abb2c04a86d5cddca78989891c3730878990cefa2a09aed45dab1b5",
+              "corpus/ORL_Money_two_node_bundle_v2_1_0.json":
+                  "0f59734decffab6da16655d02b6f40b1d49981518d596129c219042eaaa3b535",
+              "corpus/ORL_Money_three_node_bundle_v2_1_0.json":
+                  "14df3be0e00205c548ca7c0ed6a95155934d114eb726af892e22f4d7bf5a85ae",
+              "corpus/ORL_Money_balance_conflict_bundle_v2_1_0.json":
+                  "107c0267d605d0eb54ceecf71ce985f3ba9a598bf55992c12126c580fe6c087a",
+              "corpus/ORL_Money_multi_unit_bundle_v2_1_0.json":
+                  "f193856e96bc45d65adabb4d7a433499365d323a6c955c25361b4cfb22df5dde",
+          }
 
-      - name: Run reference demo
-        run: python demo/orl_money_demo_reference.py > reference_output.txt
+          manifest_path = Path("hashes/SHA256SUMS.txt")
 
-      - name: Verify reference demo output
+          if not manifest_path.is_file():
+              print("FAIL: hashes/SHA256SUMS.txt is missing.")
+              sys.exit(1)
+
+          manifest = {}
+
+          for raw_line in manifest_path.read_text(
+              encoding="utf-8-sig"
+          ).splitlines():
+              line = raw_line.strip()
+
+              if not line:
+                  continue
+
+              parts = line.split(maxsplit=1)
+
+              if len(parts) != 2:
+                  print(
+                      f"FAIL: Invalid SHA256SUMS.txt line: "
+                      f"{raw_line!r}"
+                  )
+                  sys.exit(1)
+
+              digest, relative_path = parts
+              digest = digest.lower()
+              relative_path = relative_path.strip()
+
+              if not re.fullmatch(r"[0-9a-f]{64}", digest):
+                  print(
+                      f"FAIL: Invalid SHA-256 digest for "
+                      f"{relative_path}."
+                  )
+                  sys.exit(1)
+
+              if relative_path in manifest:
+                  print(
+                      f"FAIL: Duplicate checksum entry: "
+                      f"{relative_path}"
+                  )
+                  sys.exit(1)
+
+              manifest[relative_path] = digest
+
+          if manifest != pins:
+              print(
+                  "FAIL: SHA256SUMS.txt does not match "
+                  "the frozen ORL-Money v2.1.0 checkpoint."
+              )
+
+              print("")
+              print("Expected:")
+
+              for path, digest in pins.items():
+                  print(f"{digest}  {path}")
+
+              print("")
+              print("Found:")
+
+              for path, digest in manifest.items():
+                  print(f"{digest}  {path}")
+
+              sys.exit(1)
+
+          for relative_path, expected in pins.items():
+              path = Path(relative_path)
+
+              if not path.is_file():
+                  print(
+                      f"FAIL: Missing frozen artifact: "
+                      f"{relative_path}"
+                  )
+                  sys.exit(1)
+
+              actual = hashlib.sha256(
+                  path.read_bytes()
+              ).hexdigest()
+
+              print(f"FILE:     {relative_path}")
+              print(f"EXPECTED: {expected}")
+              print(f"ACTUAL:   {actual}")
+
+              if actual != expected:
+                  print(
+                      f"FAIL: Frozen SHA-256 mismatch: "
+                      f"{relative_path}"
+                  )
+                  sys.exit(1)
+
+              print("PASS")
+              print("")
+
+          print(
+              "ORL-Money v2.1.0 frozen artifact "
+              "checkpoint verified."
+          )
+          PY
+
+      - name: Validate published corpus JSON artifacts
+        shell: bash
         run: |
-          grep -q 'VillageA.*500' reference_output.txt
-          grep -q 'VillageB.*1500' reference_output.txt
-          grep -q 'M100.*RESOLVED' reference_output.txt
-          grep -q 'M200.*INCOMPLETE' reference_output.txt
-          grep -q 'M300.*INCOMPLETE' reference_output.txt
-          grep -q 'M400.*ABSTAIN' reference_output.txt
-          grep -q 'M500.*ABSTAIN' reference_output.txt
+          set -euo pipefail
 
-      - name: Run multi-node demo
-        run: python demo/orl_money_demo_multinode.py > multinode_output.txt
+          python <<'PY'
+          from pathlib import Path
+          import json
+          import sys
 
-      - name: Verify multi-node demo output
+          files = sorted(
+              Path("corpus").glob("*.json")
+          )
+
+          if len(files) != 5:
+              print(
+                  "FAIL: Expected exactly 5 published "
+                  f"corpus JSON files, found {len(files)}."
+              )
+              sys.exit(1)
+
+          def reject_duplicate_keys(pairs):
+              obj = {}
+
+              for key, value in pairs:
+                  if key in obj:
+                      raise ValueError(
+                          f"Duplicate decoded object key: "
+                          f"{key!r}"
+                      )
+
+                  obj[key] = value
+
+              return obj
+
+          def reject_nonstandard_constant(value):
+              raise ValueError(
+                  "Non-standard JSON numeric constant: "
+                  + str(value)
+              )
+
+          failed = False
+
+          for path in files:
+              try:
+                  json.loads(
+                      path.read_text(
+                          encoding="utf-8"
+                      ),
+                      object_pairs_hook=reject_duplicate_keys,
+                      parse_constant=reject_nonstandard_constant,
+                  )
+
+                  print(
+                      f"PASS: {path.as_posix()}"
+                  )
+
+              except Exception as error:
+                  print(
+                      f"FAIL: {path.as_posix()}"
+                  )
+                  print(error)
+                  failed = True
+
+          if failed:
+              sys.exit(1)
+
+          print("")
+          print(
+              "Published corpus JSON artifacts "
+              f"verified: {len(files)} file(s)."
+          )
+          PY
+
+      - name: Verify Python syntax
         run: |
-          grep -q 'VillageA.*650' multinode_output.txt
-          grep -q 'VillageB.*1300' multinode_output.txt
-          grep -q 'VillageC.*1050' multinode_output.txt
-          grep -q 'M100.*RESOLVED' multinode_output.txt
-          grep -q 'M200.*RESOLVED' multinode_output.txt
-          grep -q 'M300.*RESOLVED' multinode_output.txt
-          grep -q 'M400.*ABSTAIN' multinode_output.txt
-          grep -q 'M500.*ABSTAIN' multinode_output.txt
+          python -m py_compile \
+            demo/ORL_Money_Reference_Kernel_v2_1_0.py \
+            verifier/ORL_Money_Independent_Verifier_v2_1_0.py
+
+          echo "Python syntax verification passed."
+
+      - name: Run Python reference audit
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          RESULT="$RUNNER_TEMP/orl-money-python-audit.txt"
+
+          python \
+            demo/ORL_Money_Reference_Kernel_v2_1_0.py \
+            --audit \
+            | tee "$RESULT"
+
+          python - "$RESULT" <<'PY'
+          from pathlib import Path
+          import re
+          import sys
+
+          expected_groups = {
+              "VALIDATION": 37,
+              "CANONICALIZATION": 15,
+              "BALANCE BASIS": 7,
+              "CLAIM / OBSERVATION": 13,
+              "RESOLUTION": 27,
+              "EXACT MONEY": 10,
+              "MERGE ALGEBRA": 259,
+              "MULTI-UNIT": 10,
+              "BALANCE COMPATIBILITY": 9,
+              "PROJECTION": 8,
+              "BOUNDARY": 7,
+              "RECEIPTS / TAMPER": 17,
+              "REFERENCE SCENARIOS": 20,
+              "ORIGIN NEUTRALITY": 2,
+              "KNOWN REGRESSIONS": 10,
+          }
+
+          text = Path(
+              sys.argv[1]
+          ).read_text(
+              encoding="utf-8"
+          )
+
+          if (
+              "ORL-Money Audit | "
+              "ORL-MONEY-AUDIT-2-D03"
+          ) not in text:
+              print(
+                  "FAIL: Python audit profile mismatch."
+              )
+              sys.exit(1)
+
+          for group, expected in expected_groups.items():
+              pattern = (
+                  r"^"
+                  + re.escape(group)
+                  + r"\s+"
+                  + str(expected)
+                  + r"/"
+                  + str(expected)
+                  + r"\s+PASS$"
+              )
+
+              if not re.search(
+                  pattern,
+                  text,
+                  flags=re.MULTILINE,
+              ):
+                  print(
+                      f"FAIL: Python audit group mismatch: "
+                      f"{group}"
+                  )
+                  sys.exit(1)
+
+          if not re.search(
+              r"^TOTAL 451/451 PASS$",
+              text,
+              flags=re.MULTILINE,
+          ):
+              print(
+                  "FAIL: Python full audit total mismatch."
+              )
+              sys.exit(1)
+
+          print("")
+          print(
+              "PYTHON FULL AUDIT: 451/451 PASS"
+          )
+          PY
+
+      - name: Run independent verifier self-test
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          RESULT="$RUNNER_TEMP/orl-money-verifier-self-test.json"
+
+          python \
+            verifier/ORL_Money_Independent_Verifier_v2_1_0.py \
+            --self-test \
+            --json \
+            > "$RESULT"
+
+          cat "$RESULT"
+
+          python - "$RESULT" <<'PY'
+          import json
+          from pathlib import Path
+          import sys
+
+          path = Path(sys.argv[1])
+
+          result = json.loads(
+              path.read_text(
+                  encoding="utf-8"
+              )
+          )
+
+          passed = (
+              result.get("profile") ==
+                  "ORL-MONEY-INDEPENDENT-VERIFIER-SELF-TEST-1-D02"
+              and result.get("version") == "2.1.0"
+              and result.get("passed") == 85
+              and result.get("total") == 85
+              and result.get("pass") is True
+              and result.get("failures") == []
+          )
+
+          print("")
+          print(
+              "PASS: Independent verifier self-test"
+              if passed
+              else "FAIL: Independent verifier self-test"
+          )
+
+          if not passed:
+              sys.exit(1)
+
+          print(
+              "INDEPENDENT VERIFIER SELF-TEST: "
+              "85/85 PASS"
+          )
+          PY
+
+      - name: Verify frozen corpus with strict canonical bytes
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          RESULT="$RUNNER_TEMP/orl-money-corpus-verification.json"
+
+          python \
+            verifier/ORL_Money_Independent_Verifier_v2_1_0.py \
+            --corpus \
+            corpus/ORL_Money_Frozen_Corpus_Manifest_v2_1_0.json \
+            --strict-canonical \
+            --json \
+            > "$RESULT"
+
+          cat "$RESULT"
+
+          python - "$RESULT" <<'PY'
+          import json
+          from pathlib import Path
+          import sys
+
+          expected_manifest_id = (
+              "corpus_manifest_"
+              "e549dcf1ff970db2ffd1422da39cfba3"
+              "28860f1afae55970229a051d9c80b05e"
+          )
+
+          expected_files = {
+              "two-node":
+                  "ORL_Money_two_node_bundle_v2_1_0.json",
+              "three-node":
+                  "ORL_Money_three_node_bundle_v2_1_0.json",
+              "balance-conflict":
+                  "ORL_Money_balance_conflict_bundle_v2_1_0.json",
+              "multi-unit":
+                  "ORL_Money_multi_unit_bundle_v2_1_0.json",
+          }
+
+          result = json.loads(
+              Path(
+                  sys.argv[1]
+              ).read_text(
+                  encoding="utf-8"
+              )
+          )
+
+          entries = result.get("entries")
+
+          entry_map = {}
+
+          if isinstance(entries, list):
+              for entry in entries:
+                  if isinstance(entry, dict):
+                      entry_map[
+                          entry.get("scenario")
+                      ] = entry
+
+          entries_ok = (
+              set(entry_map) ==
+                  set(expected_files)
+          )
+
+          if entries_ok:
+              for scenario, filename in expected_files.items():
+                  entry = entry_map[scenario]
+
+                  if not (
+                      entry.get("filename") == filename
+                      and entry.get("valid") is True
+                      and entry.get("errors") == []
+                  ):
+                      entries_ok = False
+                      break
+
+          passed = (
+              result.get("profile") ==
+                  "ORL-MONEY-CORPUS-VERIFICATION-1-D01"
+              and result.get("version") == "2.1.0"
+              and result.get("valid") is True
+              and result.get("status") == "PASS"
+              and result.get("errors") == []
+              and result.get("failure_stage") is None
+              and result.get("reason_code") == "VERIFIED"
+              and result.get("manifest_id") ==
+                  expected_manifest_id
+              and result.get("passed") == 4
+              and result.get("total") == 4
+              and entries_ok
+          )
+
+          print("")
+          print(
+              "PASS: Strict canonical frozen-corpus verification"
+              if passed
+              else "FAIL: Strict canonical frozen-corpus verification"
+          )
+
+          if not passed:
+              sys.exit(1)
+
+          print(
+              "FROZEN CORPUS: 4/4 PASS"
+          )
+          print(
+              "MANIFEST ID: "
+              + expected_manifest_id
+          )
+          PY
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+          package-manager-cache: false
+
+      - name: Install Playwright Chromium
+        run: |
+          npm install \
+            --no-save \
+            --package-lock=false \
+            playwright@1.61.1
+
+          npx playwright install --with-deps chromium
+
+      - name: Run ORL-Money browser release verification
+        run: |
+          node <<'NODE'
+          const path = require("path");
+          const { pathToFileURL } = require("url");
+          const { chromium } = require("playwright");
+
+          const expectedGroups = new Map([
+            ["VALIDATION", 37],
+            ["CANONICALIZATION", 15],
+            ["BALANCE BASIS", 7],
+            ["CLAIM / OBSERVATION", 13],
+            ["RESOLUTION", 27],
+            ["EXACT MONEY", 10],
+            ["MERGE ALGEBRA", 259],
+            ["MULTI-UNIT", 10],
+            ["BALANCE COMPATIBILITY", 9],
+            ["PROJECTION", 8],
+            ["BOUNDARY", 7],
+            ["RECEIPTS / TAMPER", 17],
+            ["REFERENCE SCENARIOS", 20],
+            ["ORIGIN NEUTRALITY", 2],
+            ["KNOWN REGRESSIONS", 10],
+            ["PYTHON / BROWSER PARITY", 36],
+          ]);
+
+          function check(name, pass) {
+            console.log(
+              `${pass ? "PASS" : "FAIL"}: ${name}`
+            );
+
+            return Boolean(pass);
+          }
+
+          function exactObject(actual, expected) {
+            const actualKeys = Object.keys(actual || {}).sort();
+            const expectedKeys = Object.keys(expected).sort();
+
+            if (
+              JSON.stringify(actualKeys) !==
+              JSON.stringify(expectedKeys)
+            ) {
+              return false;
+            }
+
+            return expectedKeys.every(
+              (key) => actual[key] === expected[key]
+            );
+          }
+
+          (async () => {
+            const browser = await chromium.launch({
+              headless: true,
+            });
+
+            let failed = false;
+
+            try {
+              const pageErrors = [];
+
+              const page = await browser.newPage({
+                viewport: {
+                  width: 1600,
+                  height: 1200,
+                },
+              });
+
+              page.on(
+                "console",
+                (message) => {
+                  console.log(
+                    `[browser] ${message.text()}`
+                  );
+                }
+              );
+
+              page.on(
+                "pageerror",
+                (error) => {
+                  pageErrors.push(
+                    error.message
+                  );
+
+                  console.error(
+                    "PAGE ERROR:",
+                    error.message
+                  );
+                }
+              );
+
+              const htmlPath = path.resolve(
+                "demo/ORL_Money_Structural_Lab_v2_1_0.html"
+              );
+
+              await page.goto(
+                pathToFileURL(htmlPath).href,
+                {
+                  waitUntil: "load",
+                }
+              );
+
+              await page.waitForFunction(
+                () =>
+                  typeof globalThis.ORLMoneyCore === "object" &&
+                  typeof globalThis.ORLMoneyCore.scenarioBundle === "function" &&
+                  typeof globalThis.ORLMoneyCore.verifyBundle === "function" &&
+                  typeof globalThis.ORL_MONEY_AUDIT === "object" &&
+                  typeof globalThis.ORL_MONEY_AUDIT.runAll === "function" &&
+                  typeof globalThis.ORL_MONEY_AUDIT.quick === "function",
+                null,
+                {
+                  timeout: 30000,
+                }
+              );
+
+              const report = await page.evaluate(
+                async () => {
+                  const full =
+                    await globalThis.ORL_MONEY_AUDIT.runAll();
+
+                  const quick =
+                    globalThis.ORL_MONEY_AUDIT.quick();
+
+                  const core =
+                    globalThis.ORLMoneyCore;
+
+                  const scenarioNames = [
+                    "two-node",
+                    "three-node",
+                    "balance-conflict",
+                    "multi-unit",
+                  ];
+
+                  const scenarios =
+                    Object.fromEntries(
+                      scenarioNames.map(
+                        (name) => {
+                          const bundle =
+                            core.scenarioBundle(name)[1];
+
+                          return [
+                            name,
+                            {
+                              result: bundle.result,
+                              valid:
+                                core.verifyBundle(bundle).valid,
+                              financial_resolution_id:
+                                bundle.financial_resolution_id,
+                              financial_bundle_id:
+                                bundle.financial_bundle_id,
+                            },
+                          ];
+                        }
+                      )
+                    );
+
+                  const two =
+                    core.scenarioBundle("two-node")[1];
+
+                  const threeScenario =
+                    core.getScenario("three-node");
+
+                  const conflict =
+                    core.scenarioBundle(
+                      "balance-conflict"
+                    )[1];
+
+                  const multi =
+                    core.scenarioBundle("multi-unit")[1];
+
+                  return {
+                    version: core.VERSION,
+                    profiles: core.profiles,
+                    full,
+                    quick,
+                    scenarios,
+                    twoStates:
+                      core.transactionStateMap(two),
+                    twoBalances:
+                      core.finalBalanceMap(two),
+                    threeProgression:
+                      core.simulateThreeNodeRounds(
+                        threeScenario
+                      ),
+                    conflictStates:
+                      core.transactionStateMap(conflict),
+                    conflictCompatibility:
+                      conflict.declared_balance_compatibility,
+                    multiBalances:
+                      core.finalBalanceMap(multi),
+                    multiConservation:
+                      core.unitConservationMap(multi),
+                    multiBoundary:
+                      multi.boundary,
+                  };
+                }
+              );
+
+              if (
+                !check(
+                  "Release version",
+                  report.version === "2.1.0"
+                )
+              ) {
+                failed = true;
+              }
+
+              if (
+                !check(
+                  "Architecture profile",
+                  report.profiles.ARCHITECTURE_PROFILE ===
+                    "ORL-MONEY-ARCH-2-D02"
+                )
+              ) {
+                failed = true;
+              }
+
+              if (
+                !check(
+                  "Ruleset profile",
+                  report.profiles.RULESET_PROFILE ===
+                    "ORL-MONEY-RULES-2-D02"
+                )
+              ) {
+                failed = true;
+              }
+
+              if (
+                !check(
+                  "Browser audit profile",
+                  report.full.profile ===
+                    "ORL-MONEY-AUDIT-2-D04"
+                )
+              ) {
+                failed = true;
+              }
+
+              if (
+                !check(
+                  "Browser full audit",
+                  report.full.pass === true &&
+                  report.full.passed === 487 &&
+                  report.full.total === 487 &&
+                  Array.isArray(
+                    report.full.failures
+                  ) &&
+                  report.full.failures.length === 0
+                )
+              ) {
+                failed = true;
+              }
+
+              if (
+                !check(
+                  "Browser quick audit",
+                  report.quick.pass === true &&
+                  report.quick.passed === 143 &&
+                  report.quick.total === 143 &&
+                  Array.isArray(
+                    report.quick.failures
+                  ) &&
+                  report.quick.failures.length === 0
+                )
+              ) {
+                failed = true;
+              }
+
+              if (
+                !check(
+                  "Audit group count",
+                  Array.isArray(
+                    report.full.groups
+                  ) &&
+                  report.full.groups.length ===
+                    expectedGroups.size
+                )
+              ) {
+                failed = true;
+              }
+
+              if (
+                Array.isArray(
+                  report.full.groups
+                )
+              ) {
+                for (
+                  const group of
+                  report.full.groups
+                ) {
+                  const expected =
+                    expectedGroups.get(
+                      group.name
+                    );
+
+                  if (
+                    !check(
+                      `${group.name} audit group`,
+                      expected !== undefined &&
+                      group.pass === true &&
+                      group.passed === expected &&
+                      group.total === expected
+                    )
+                  ) {
+                    failed = true;
+                  }
+                }
+              }
+
+              const scenarios =
+                report.scenarios;
+
+              if (
+                !check(
+                  "All four browser reference bundles",
+                  Object.keys(scenarios).length === 4 &&
+                  Object.values(scenarios).every(
+                    (item) =>
+                      item.result === "ACCEPTED" &&
+                      item.valid === true
+                  )
+                )
+              ) {
+                failed = true;
+              }
+
+              if (
+                !check(
+                  "Two-node transaction states",
+                  exactObject(
+                    report.twoStates,
+                    {
+                      M100: "RESOLVED",
+                      M200: "INCOMPLETE",
+                      M300: "INCOMPLETE",
+                      M400: "ABSTAIN",
+                      M500: "ABSTAIN",
+                    }
+                  )
+                )
+              ) {
+                failed = true;
+              }
+
+              if (
+                !check(
+                  "Two-node final balances",
+                  exactObject(
+                    report.twoBalances,
+                    {
+                      "VillageA|UNIT": "500",
+                      "VillageB|UNIT": "1500",
+                    }
+                  )
+                )
+              ) {
+                failed = true;
+              }
+
+              if (
+                !check(
+                  "Three-node reconstruction progression",
+                  report.threeProgression.before_match === false &&
+                  report.threeProgression.round_1_match === false &&
+                  report.threeProgression.round_2_match === true
+                )
+              ) {
+                failed = true;
+              }
+
+              if (
+                !check(
+                  "Declared-balance conflict transaction states",
+                  exactObject(
+                    report.conflictStates,
+                    {
+                      T1: "RESOLVED",
+                      T2: "RESOLVED",
+                    }
+                  )
+                )
+              ) {
+                failed = true;
+              }
+
+              const conflictAssessments =
+                report.conflictCompatibility
+                  .assessments || [];
+
+              if (
+                !check(
+                  "Declared-balance compatibility conflict",
+                  report.conflictCompatibility.state ===
+                    "CONFLICT" &&
+                  conflictAssessments.some(
+                    (item) =>
+                      item.deficit_minor === "40"
+                  )
+                )
+              ) {
+                failed = true;
+              }
+
+              if (
+                !check(
+                  "Multi-unit final balances",
+                  exactObject(
+                    report.multiBalances,
+                    {
+                      "A|EUR": "450",
+                      "A|USD": "800",
+                      "B|USD": "200",
+                      "C|EUR": "50",
+                    }
+                  )
+                )
+              ) {
+                failed = true;
+              }
+
+              if (
+                !check(
+                  "Multi-unit conservation",
+                  exactObject(
+                    report.multiConservation,
+                    {
+                      EUR: true,
+                      USD: true,
+                    }
+                  )
+                )
+              ) {
+                failed = true;
+              }
+
+              if (
+                !check(
+                  "Multi-unit SEALED boundary",
+                  report.multiBoundary.state ===
+                    "SEALED"
+                )
+              ) {
+                failed = true;
+              }
+
+              if (
+                !check(
+                  "No browser page errors",
+                  pageErrors.length === 0
+                )
+              ) {
+                failed = true;
+              }
+
+              console.log("");
+              console.log(
+                `FULL BROWSER AUDIT: ` +
+                `${report.full.passed}/${report.full.total} ` +
+                `${report.full.pass ? "PASS" : "FAIL"}`
+              );
+
+              console.log(
+                `QUICK BROWSER AUDIT: ` +
+                `${report.quick.passed}/${report.quick.total} ` +
+                `${report.quick.pass ? "PASS" : "FAIL"}`
+              );
+
+              await page.close();
+
+              if (failed) {
+                console.error("");
+                console.error(
+                  "ORL-Money browser verification failed."
+                );
+
+                process.exitCode = 1;
+              } else {
+                console.log("");
+                console.log(
+                  "ORL-Money browser verification passed."
+                );
+              }
+            } finally {
+              await browser.close();
+            }
+          })().catch(
+            (error) => {
+              console.error(error);
+              process.exit(1);
+            }
+          );
+          NODE
+
+      - name: Verification summary
+        run: |
+          echo "ORL-MONEY v2.1.0 VERIFICATION PASS"
+          echo "Frozen artifact checkpoint: 8/8 PASS"
+          echo "Published corpus JSON artifacts: 5/5 PASS"
+          echo "Python syntax: PASS"
+          echo "Python full audit: 451/451 PASS"
+          echo "Independent verifier self-test: 85/85 PASS"
+          echo "Frozen corpus strict canonical verification: 4/4 PASS"
+          echo "Browser full audit: 487/487 PASS"
+          echo "Browser quick audit: 143/143 PASS"
+          echo "Python / Browser parity: 36/36 PASS"
+          echo "Manifest identity: corpus_manifest_e549dcf1ff970db2ffd1422da39cfba328860f1afae55970229a051d9c80b05e"
